@@ -1,0 +1,894 @@
+<!doctype html>
+<html lang="zh-TW"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>青山B 棒球比賽紀錄平台</title>
+<style id="app-css">
+:root{--bg:#f3f5f9;--s:#fff;--s2:#eaeef5;--t:#152033;--m:#5f6f86;--bd:#d3dae6;--acc:#d62839;--acc2:#c76b1a;--g:#15957f;--bl:#2f6690;--on:#fff;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0a1628;--s:#111d35;--s2:#182844;--t:#e8edf5;--m:#8a9bb4;--bd:#2a3a5c;--acc:#e63946;--acc2:#f4a261;--g:#2ec4b6;--bl:#457b9d}}
+:root[data-theme="dark"]{--bg:#0a1628;--s:#111d35;--s2:#182844;--t:#e8edf5;--m:#8a9bb4;--bd:#2a3a5c;--acc:#e63946;--acc2:#f4a261;--g:#2ec4b6;--bl:#457b9d}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--t);font:14px/1.5 -apple-system,"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;padding-bottom:72px}
+header{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-bottom:1px solid var(--bd);background:var(--s);position:sticky;top:env(safe-area-inset-top,0px);z-index:5}
+header b{font-size:17px}#hd{color:var(--m);font-size:12px}
+main{max-width:760px;margin:0 auto;padding:14px}
+.card{background:var(--s);border:1px solid var(--bd);border-radius:12px;padding:14px;margin-bottom:12px}
+h2{font-size:15px;margin:0 0 10px}
+label{display:block;color:var(--m);font-size:12px;margin:8px 0 3px}
+input,select,textarea{width:100%;background:var(--s2);color:var(--t);border:1px solid var(--bd);border-radius:8px;padding:8px 10px;font:inherit}
+textarea{min-height:120px}
+button{font:inherit;color:var(--t);background:var(--s2);border:1px solid var(--bd);border-radius:9px;padding:8px 12px;cursor:pointer}
+button:active{transform:scale(.97)}
+.pri{background:var(--acc);border-color:var(--acc);color:#fff;font-weight:600}
+.danger{color:var(--acc)}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.chip{display:inline-block;padding:3px 10px;border-radius:99px;background:var(--s2);font-size:12px;font-weight:600}
+.chip b{color:var(--acc2)}
+.tw{overflow-x:auto}
+table{border-collapse:collapse;width:100%;white-space:nowrap}
+th,td{padding:6px 8px;text-align:center;border-bottom:1px solid var(--bd);font-size:13px}
+th{color:var(--m);font-weight:500}td:first-child,th:first-child{text-align:left}
+.sc td:last-child,.sc td:nth-last-child(2),.sc td:nth-last-child(3){font-weight:700}
+.rs{display:flex;flex-wrap:wrap;gap:7px}
+.rs button{border-width:2px}
+.pb{padding:12px 4px;font-weight:700;border:0;color:#fff}
+.mono{font-family:ui-monospace,monospace;color:var(--acc2)}
+nav{position:fixed;bottom:0;left:0;right:0;display:flex;background:var(--s);border-top:1px solid var(--bd);padding-bottom:env(safe-area-inset-bottom,0px);z-index:9}
+nav button{flex:1;border:0;border-radius:0;background:none;color:var(--m);padding:12px 4px;font-size:13px}
+nav button.on{color:var(--acc);font-weight:700}
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;padding:16px;z-index:20}
+.mb{max-height:88vh;overflow:auto;background:var(--s);border:1px solid var(--bd);border-radius:14px;padding:18px;width:100%;max-width:360px}
+#toast{position:fixed;bottom:84px;left:50%;transform:translateX(-50%);background:var(--acc);color:#fff;padding:9px 20px;border-radius:10px;opacity:0;transition:.25s;pointer-events:none;z-index:30}
+#toast.on{opacity:1}
+.m{color:var(--m)}
+.lr{display:grid;grid-template-columns:44px 1fr 92px;gap:8px;align-items:center;margin-bottom:6px}
+summary{cursor:pointer}
+.ev{display:flex;gap:12px}.evl{flex:none}.evr{flex:1;min-width:0}.evf{font-size:13px;line-height:1.75;margin-top:4px}
+.pl{display:flex;align-items:center;gap:10px;padding:6px 0;border-top:1px dashed var(--bd);font-size:13px}.pl span:nth-child(2){flex:1}
+.pn{width:24px;height:24px;border-radius:50%;color:#fff;display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:12px}
+.lr2{display:grid;grid-template-columns:1fr 130px;gap:8px;align-items:center;margin-bottom:6px}
+.av{border-radius:50%;object-fit:cover;background:var(--s2);border:2px solid var(--acc2);display:inline-flex;align-items:center;justify-content:center;font-weight:700;color:var(--acc2);flex:none}
+
+.pbp{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:22px;align-items:start}
+.ih{background:var(--s2);border-left:4px solid var(--acc2);padding:7px 12px;font-weight:700;margin:14px 0 0;border-radius:6px}
+.pe{display:flex;gap:10px;padding:12px 0;border-bottom:1px solid var(--bd)}
+.pe>div:last-child{flex:1;min-width:0}
+.chipx{display:inline-block;padding:3px 10px;border-radius:6px;color:#fff;font-size:12px;font-weight:700}
+.info{background:var(--s2);padding:8px 12px;font-size:13px;border-bottom:1px solid var(--bd)}
+.inn-nav{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}
+.inn{width:32px;height:32px;border-radius:50%;padding:0;font-weight:700}
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script></head>
+<body>
+<header><b>⚾ 青山B 比賽紀錄</b><span id="hd"></span></header>
+<main id="main"></main>
+<nav id="nav"></nav>
+<div id="modal"></div><div id="toast"></div>
+<script id="app-src">
+const SB_URL='https://vtrroydbqwfzmmqtqtbp.supabase.co',SB_KEY='sb_publishable_CZAmGsiXHvF3FfYqodso7w_DeuOEOKh'; // 公開金鑰：可放在網頁中，資料安全由伺服器端的權限規則把關
+let token=null,sb=null; // token：後台登入後由伺服器發的憑證（只存在記憶體）
+let role=null,roleName='';
+const isAdmin=()=>role==='admin';
+const needAdmin=()=>{if(!isAdmin()){toast('權限不足：此操作僅限後台管理員');return true}return false};
+const RESULTS=['一安','二安','三安','全壘打','飛球出局','滾地出局','三振','不死三振','四壞','犧牲打','雙殺','失誤','野選','觸身球','其他'];
+const NON_AB=['四壞','觸身球','犧牲打','其他'];
+const HOME_DEF=`39 王奎壬\n16 王文儐\n23 周霆峰\n20 陳加澄\n18 李宜祐\n12 鄭右琳\n25 紀宇恆\n10 林立祥\n11 蔡承翰\n22 蔡品浩\n8 周峻丞\n17 黃楷祐\n52 蔡皓茞\n27 曾唯哲\n33 吳政諺\n32 蔡聖宗\n67 王子允\n7 鄭懷文\n99 蔡承佑\n98 蔡承霖`;
+const $=id=>document.getElementById(id);
+const E=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const STATIC=!!window.__STATIC; // 匯出的「展示頁」：唯讀，不需登入，資料內嵌
+let db=STATIC?{games:[],cur:null,...JSON.parse(JSON.stringify(window.__STATIC)),users:[]}:{games:[],cur:null};
+if(!STATIC){try{const v=localStorage.getItem('qb2');if(v)db=JSON.parse(v)}catch(e){}}
+else{const l=[...db.games].sort((a,b)=>(b.created||0)-(a.created||0))[0];db.cur=l?l.id:null}
+function save(){if(STATIC)return;try{localStorage.setItem('qb2',JSON.stringify(db))}catch(e){}}
+let annEdit='',pbF='得分',noteIn='',SY=null,canW=true,canAdm=true,unsubs=[],rt=null;
+let tab='home',adminOK=false,adminSel=null,selIdx=null,rbiIn='',runIn='';
+const POS=['P','C','1B','2B','3B','SS','LF','CF','RF','DH'];
+let draft={step:'home',side:'home',home:'青山B',pool:HOME_DEF,hl:['0','1','2','3','4','5','6','7','8'],hpos:Array(9).fill(''),hpi:'',away:'對手',an:Array(9).fill(''),apos:Array(9).fill(''),ap:'',asub:''};
+const cg=()=>db.games.find(g=>g.id===db.cur);
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+if(!Array.isArray(db.players)){db.players=HOME_DEF.split('\n').map(l=>{const m=l.match(/^(\d+)\s+(.+)$/);return{id:'p'+m[1],n:m[1],name:m[2],photo:''}});save()}
+if(!Array.isArray(db.ann))db.ann=[];
+if(!Array.isArray(db.users))db.users=[];
+const photoOf=p=>{const q=p&&p.pid&&db.players.find(x=>x.id===p.pid);return q?q.photo:''};
+const av=(p,z)=>{const ph=photoOf(p);return ph?`<img class="av" style="width:${z}px;height:${z}px" src="${ph}" alt="">`:`<span class="av" style="width:${z}px;height:${z}px;font-size:${Math.round(z/3)}px">${E(p&&p.n?p.n:'?')}</span>`};
+function toast(m){const t=$('toast');t.textContent=m;t.classList.add('on');setTimeout(()=>t.classList.remove('on'),2000)}
+function modal(h){$('modal').innerHTML=h?`<div class="ov" onclick="if(event.target===this)modal('')"><div class="mb">${h}</div></div>`:''}
+
+/* ---------- 規則引擎 ---------- */
+const isHit=r=>['一安','二安','三安','全壘打'].includes(r);
+const NO_RBI=['雙殺','失誤','不死三振','三振','其他'];
+const occ=b=>String(b).split('').map(c=>c==='1');
+// 預設跑壘結果：b=打者去向，m[i]=原本 i+1 壘跑者去向；0=出局 1~3=壘包 4=得分
+function defaultRes(result,bases,outsBefore){
+  const o=occ(bases),up=n=>[1,2,3].map(x=>Math.min(4,x+n)),hb={'一安':1,'二安':2,'三安':3,'全壘打':4}[result]||0;
+  const chain=on=>{const d=[1,2,3];if(on[0]){d[0]=2;if(on[1]){d[1]=3;if(on[2])d[2]=4}}return d};
+  const lead=on=>on[2]?2:on[1]?1:0;
+  let b=1,d=[1,2,3];
+  if(hb){b=hb;d=up(hb)}
+  else if(result==='四壞'||result==='觸身球'){d=chain(o)}
+  else if(result==='失誤'){d=up(1)}
+  else if(result==='野選'){if(o.some(Boolean)){const l=lead(o),o2=o.slice();o2[l]=false;d=chain(o2);d[l]=0}else b=0}
+  else if(result==='犧牲打'){b=0;if(outsBefore<2)d=up(1)}
+  else if(result==='三振'||result==='飛球出局'||result==='滾地出局'){b=0}
+  else if(result==='不死三振'){if(!o[0]||outsBefore>=2)d=chain(o);else b=0}
+  else if(result==='雙殺'){b=0;if(o[0]){d=chain(o);d[0]=0}else d[lead(o)]=0}
+  return{b,m:d};
+}
+function resolve(s,r){
+  const res=r.res||defaultRes(r.result,s.bases,s.outs);
+  if(!r.res&&r.mr){let k=r.mr;for(let i=2;i>=0&&k>0;i--)if(s.bases[i]==='1'&&res.m[i]!==0){res.m[i]=4;k--}}
+  const nx=[0,0,0],mv=[];let runs=0,outsAdd=0,sc=0;
+  s.bases.split('').forEach((c,i)=>{if(c!=='1')return;const d=res.m[i];mv.push({i,who:(s.rn&&s.rn[i])||'',d});if(d===0)outsAdd++;else if(d>=4){runs++;sc++}else nx[d-1]=(s.rn&&s.rn[i])||'?'});
+  if(res.b===0)outsAdd++;else if(res.b>=4){runs++;sc++}else nx[res.b-1]=r.batter||'?';
+  if(s.outs+outsAdd>=3&&!res.tp)runs=0;
+  return{runs,outsAdd,nb:nx,sc,mv,bd:res.b};
+}
+const st=g=>g.records.length?g.records[g.records.length-1].after:{inning:1,half:'top',outs:0,bases:'000'};
+function apply(s,r){
+  let runs=0,outsAdd=0,rbi=0,nb;
+  if(r.type==='pa'){const o=resolve(s,r);runs=o.runs;outsAdd=o.outsAdd;nb=o.nb;r.mv=o.mv;r.bd=o.bd;r.tp=!!(r.res&&r.res.tp);rbi=(r.rbiM!=null)?r.rbiM:(NO_RBI.includes(r.result)?0:runs);r.hits=isHit(r.result)?1:0;r.errors=r.result==='失誤'?1:0}
+  else if(r.type==='run'){
+    const b=s.bases.split('').map((c,k)=>c==='1'?((s.rn&&s.rn[k])||'?'):0);
+    const si=r.base!==undefined?r.base:((b[0]&&!b[1])?0:(b[1]&&!b[2])?1:b[2]?2:b.findIndex(x=>x));
+    if(r.result==='盜壘成功'){if(si===2){b[2]=0;runs=1}else if(si>=0){b[si+1]=b[si];b[si]=0}}
+    else if(r.result==='盜壘失敗'){if(si>=0)b[si]=0;outsAdd=1}
+    else{const k=r.base!==undefined?r.base:(b[0]?0:b.findIndex(x=>x));if(k>=0)b[k]=0;outsAdd=1}
+    nb=b;r.hits=0;r.errors=0}
+  else{nb=s.bases.split('').map((c,k)=>c==='1'?((s.rn&&s.rn[k])||'?'):0);r.hits=0;r.errors=0}
+  r.runs=runs;r.rbi=rbi;r.pre={outs:s.outs,bases:s.bases,rn:s.rn||['','','']};r.outsAdd=outsAdd;r.outsTot=Math.min(3,s.outs+outsAdd);
+  let outs=s.outs+outsAdd,inning=s.inning,half=s.half,bs=nb.map(x=>x?1:0).join(''),rn2=nb.map(x=>x||'');
+  if(outs>=3){outs=0;bs='000';rn2=['','',''];if(half==='top')half='bottom';else{half='top';inning++}}
+  r.after={inning,half,outs,bases:bs,rn:rn2};return r.after;
+}
+function replay(g){let s={inning:1,half:'top',outs:0,bases:'000'};g.records.forEach(r=>{r.inning=s.inning;r.half=s.half;s=apply(s,r)})}
+const cnt=q=>{let b=0,s=0;for(const c of q){if(c==='B')b++;if(c==='S')s++;if(c==='F'&&s<2)s++}return{b,s}};
+const teamOf=r=>r.half==='top'?'away':'home';
+
+/* ---------- 計分板與統計 ---------- */
+function board(g){
+  const s=st(g),n=Math.max(9,s.inning),T={away:{r:0,h:0,e:0},home:{r:0,h:0,e:0}},I={away:{},home:{}};
+  g.records.forEach(x=>{const b=teamOf(x),f=b==='away'?'home':'away';I[b][x.inning]=(I[b][x.inning]||0)+x.runs;T[b].r+=x.runs;T[b].h+=x.hits||0;T[f].e+=x.errors||0});
+  const reached=(b,i)=>i<s.inning||(i===s.inning&&b==='away'&&s.half==='bottom');
+  const row=b=>`<tr><td><b>${E(g[b])}</b></td>${Array.from({length:n},(_,k)=>`<td>${I[b][k+1]??(reached(b,k+1)?0:'-')}</td>`).join('')}<td>${T[b].r}</td><td>${T[b].h}</td><td>${T[b].e}</td></tr>`;
+  return{html:`<div class="tw"><table class="sc"><thead><tr><th>隊伍</th>${Array.from({length:n},(_,k)=>`<th>${k+1}</th>`).join('')}<th>R</th><th>H</th><th>E</th></tr></thead><tbody>${row('away')}${row('home')}</tbody></table></div>`,T,I,n};
+}
+const ipTxt=o=>`${Math.floor(o/3)}.${o%3}`;
+function statData(g){
+  replay(g);
+  const D={away:{bat:{},pit:{}},home:{bat:{},pit:{}}};
+  const B=(t,k)=>D[t].bat[k]||(D[t].bat[k]={name:k,pa:0,ab:0,h:0,d2:0,d3:0,hr:0,rbi:0,r:0,k:0,bb:0,sb:0});
+  const P=(t,k)=>D[t].pit[k]||(D[t].pit[k]={name:k,outs:0,bf:0,h:0,hr:0,k:0,bb:0,hbp:0,r:0,np:0});
+  const okn=n=>n&&n!=='?';
+  g.records.forEach(r=>{
+    const bt=teamOf(r),ft=bt==='away'?'home':'away',pk=r.pitcher||'(未填)';
+    if(r.type==='pa'){
+      const b=B(bt,r.batter||'(未填)');b.pa++;if(!NON_AB.includes(r.result))b.ab++;b.h+=r.hits||0;
+      if(r.result==='二安')b.d2++;if(r.result==='三安')b.d3++;if(r.result==='全壘打')b.hr++;b.rbi+=r.rbi||0;
+      const K=r.result==='三振'||r.result==='不死三振',W=r.result==='四壞',H=r.result==='觸身球';
+      if(K)b.k++;if(W||H)b.bb++;
+      if(r.runs>0){(r.mv||[]).forEach(m=>{if(m.d>=4&&okn(m.who))B(bt,m.who).r++});if(r.bd>=4)b.r++}
+      const p=P(ft,pk);p.bf++;p.outs+=r.outsAdd||0;p.h+=r.hits||0;if(r.result==='全壘打')p.hr++;if(K)p.k++;if(W)p.bb++;if(H)p.hbp++;p.r+=r.runs||0;
+      p.np+=(r.seq||'').length+(['三振','不死三振','四壞'].includes(r.result)?0:1);
+    }else if(r.type==='run'){
+      const who=r.runner||r.batter;
+      if(r.result==='盜壘成功'&&okn(who)){B(bt,who).sb++;if(r.runs>0)B(bt,who).r++}
+      const p=P(ft,pk);p.outs+=r.outsAdd||0;p.r+=r.runs||0;
+    }
+  });
+  return D;
+}
+const BAT_H=['打者','打席','打數','安打','二安','三安','全壘打','打點','得分','三振','四死','盜壘','打擊率'];
+const PIT_H=['投手','局數','打者','被安打','被全壘打','三振','四壞','觸身','失分','球數'];
+const batRow=o=>[o.name,o.pa,o.ab,o.h,o.d2,o.d3,o.hr,o.rbi,o.r,o.k,o.bb,o.sb,o.ab?(o.h/o.ab).toFixed(3):'-'];
+const pitRow=o=>[o.name,ipTxt(o.outs),o.bf,o.h,o.hr,o.k,o.bb,o.hbp,o.r,o.np];
+const tbl=(h,rows)=>`<div class="tw"><table><thead><tr>${h.map(x=>`<th>${x}</th>`).join('')}</tr></thead><tbody>${rows.map(r=>`<tr>${r.map(c=>`<td>${E(c)}</td>`).join('')}</tr>`).join('')||`<tr><td colspan="${h.length}" class="m">尚無資料</td></tr>`}</tbody></table></div>`;
+function teamStats(g){
+  const D=statData(g);
+  return['away','home'].map(t=>`<h2 style="margin:14px 0 6px">${E(g[t])}　打者成績</h2>${tbl(BAT_H,Object.values(D[t].bat).map(batRow))}<h2 style="margin:14px 0 6px">${E(g[t])}　投手成績</h2>${tbl(PIT_H,Object.values(D[t].pit).map(pitRow))}`).join('');
+}
+const logRows=(g,del)=>[...g.records].reverse().map(r=>`<tr><td>${r.half==='top'?'▲':'▼'}${r.inning}</td><td>${E(r.type==='pa'?(r.batter||'-')+(r.note?' ※'+r.note:''):(r.note||r.batter||'-'))}</td><td>${E(r.pitcher||'')}</td><td class="mono">${E(r.seq||'')}</td><td><b>${E(r.result)}</b></td><td>${r.runs}</td><td>${r.rbi}</td>${del?(r.type==='pa'||r.type==='run'?`<td><button class="danger" onclick="delRec('${r.id}')">刪除</button></td>`:'<td></td>'):''}</tr>`).join('');
+const logTable=(g,del)=>`<div class="tw" style="max-height:420px;overflow-y:auto"><table><thead><tr><th>局</th><th>打者</th><th>投手</th><th>配球</th><th>結果</th><th>得分</th><th>打點</th>${del?'<th></th>':''}</tr></thead><tbody>${logRows(g,del)||'<tr><td colspan="8" class="m">尚無紀錄</td></tr>'}</tbody></table></div>`;
+function csv(g){
+  const q=v=>`"${String(v??'').replace(/"/g,'""')}"`;
+  const rows=g.records.map(r=>[new Date(r.t).toLocaleString('zh-TW',{hour12:false}),r.half==='top'?'上':'下',r.inning,r.type==='pa'?r.batter:(r.note||r.batter),r.pitcher,r.seq,r.result,r.runs,r.rbi,r.hits,r.errors,r.after.outs,r.after.bases,r.type==='pa'?r.note:''].map(q).join(','));
+  dl(`${g.away}-vs-${g.home}.csv`,'\ufeff'+[['半局','局','打者','投手','配球','結果','得分','打點','安打','失誤','出局','壘包','備註'].map(q).join(',')].concat(rows).join('\n'),'text/csv');
+}
+async function dlBin(name,buf){
+  let d=null;try{if(typeof claude!=='undefined')d=await claude.use('downloads')}catch(e){}
+  if(!d){toast('此環境無法下載檔案');return}
+  try{await d.save({filename:name,data:buf});toast('已交給瀏覽器儲存')}catch(e){if(!e||e.code!=='declined')toast('無法下載：'+((e&&e.code)||'錯誤'))}
+}
+function exportXlsx(g){
+  if(typeof XLSX==='undefined'){toast('Excel 元件載入失敗，改為匯出 CSV');csv(g);return}
+  const D=statData(g),wb=XLSX.utils.book_new(),used=new Set(),bd=board(g);
+  const nm=n=>{let b=String(n).replace(/[\\\/\?\*\[\]:]/g,'').slice(0,26)||'sheet',x=b,i=2;while(used.has(x))x=b+(i++);used.add(x);return x};
+  const add=(n,rows)=>XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(rows),nm(n));
+  const inn=Array.from({length:bd.n},(_,i)=>i+1);
+  add('比賽摘要',[['比賽',`${g.away} vs ${g.home}`],['比賽碼',g.code||''],['狀態',g.status==='final'?'已結束':'進行中'],[],['隊伍',...inn,'R','H','E'],
+    [g.away,...inn.map(i=>bd.I.away[i]??'-'),bd.T.away.r,bd.T.away.h,bd.T.away.e],[g.home,...inn.map(i=>bd.I.home[i]??'-'),bd.T.home.r,bd.T.home.h,bd.T.home.e]]);
+  ['away','home'].forEach(t=>{
+    add(`${g[t]}打者`,[BAT_H,...Object.values(D[t].bat).map(batRow)]);
+    add(`${g[t]}投手`,[PIT_H,...Object.values(D[t].pit).map(pitRow)]);
+  });
+  add('逐打席紀錄',[['局','半局','棒次','守位','打者','投手','配球','結果','一壘跑者','二壘跑者','三壘跑者','打點','得分','本打席出局','累計出局','特殊情況／備註'],
+    ...g.records.map(r=>r.type==='pa'?[r.inning,r.half==='top'?'上':'下',r.slot||'',r.pos||'',r.batter,r.pitcher,r.seq,r.result,runnerTxt(r,0),runnerTxt(r,1),runnerTxt(r,2),r.rbi,r.runs,r.outsAdd||0,r.outsTot??'',specials(r).join('；')]
+      :[r.inning,r.half==='top'?'上':'下','','',r.type==='run'?(r.runner||''):'',r.pitcher||'','',r.result,'','','','',r.runs||0,r.outsAdd||0,r.outsTot??'',r.note||''])]);
+  const out=XLSX.write(wb,{bookType:'xlsx',type:'array'});
+  dlBin(`${g.away}-vs-${g.home}.xlsx`.replace(/[\\\/:*?"<>|]/g,''),out);
+}
+async function dl(name,text){
+  let d=null;try{if(typeof claude!=='undefined')d=await claude.use('downloads')}catch(e){}
+  if(d){try{await d.save({filename:name,data:text});toast('已交給瀏覽器儲存');return}catch(e){if(e&&e.code==='declined')return}}
+  showText(name,text);
+}
+function showText(name,text){
+  modal(`<h2>手動複製</h2><p class="m" style="font-size:12px">此環境無法直接下載檔案。請按「複製」，貼到記事本或備忘錄，存成 ${E(name)}。</p><textarea id="ta" readonly style="min-height:160px;font-size:11px">${E(text)}</textarea><div class="row" style="margin-top:10px"><button class="pri" onclick="copyTa()">複製</button><button onclick="modal('')">關閉</button></div>`);
+}
+function copyTa(){const t=$('ta');t.select();let ok=false;try{ok=document.execCommand('copy')}catch(e){}if(!ok&&navigator.clipboard)navigator.clipboard.writeText(t.value).then(()=>toast('已複製'),()=>toast('請手動長按全選複製'));else toast(ok?'已複製':'請手動長按全選複製')}
+
+/* ---------- 畫面 ---------- */
+function go(t){
+  if(STATIC&&!['home','sum'].includes(t))return;
+  if(t==='admin'&&!role){showLogin();return}
+  if((t==='game'||t==='sum')&&!cg()){toast(STATIC?'請先從首頁選擇一場比賽':'請先在「設定」建立比賽');return}
+  tab=t;render();window.scrollTo(0,0);
+}
+async function sha(t){try{const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(t));return[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('')}catch(e){return''}}
+function showLogin(){
+  modal(`<h2>🛠 後台登入</h2><label>帳號（後台管理員免填）</label><input id="lu" autocomplete="username"><label>密碼</label><input id="pw" type="password" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()"><button class="pri" style="width:100%;margin-top:10px" onclick="doLogin()">登入</button>`);
+  setTimeout(()=>{const i=$('lu');if(i)i.focus()},50);
+}
+async function doLogin(){
+  const nm=$('lu').value.trim(),pw=$('pw').value;if(!pw){toast('請輸入密碼');return}
+  const h=await sha(pw);if(!h){toast('此環境不支援密碼驗證');return}
+  if(h===ADMIN_HASH){role='admin';roleName='後台管理員'}
+  else{const u=db.users.find(x=>x.name===nm);if(!u||await sha(u.salt+pw)!==u.hash){toast('帳號或密碼錯誤');return}role='user';roleName=u.name}
+  modal('');adminTab='games';adminSel=null;annEdit='';go('admin');toast('登入成功：'+roleName);
+}
+function adminLogout(){role=null;roleName='';adminSel=null;annEdit='';go('home')}
+function render(){
+  if((tab==='game'||tab==='sum')&&!cg())tab='home';
+  if(STATIC&&!['home','sum'].includes(tab))tab='home';
+  $('nav').innerHTML=(STATIC?[['home','🏠 首頁'],['sum','📊 比賽摘要']]:[['home','🏠 首頁'+(unseenAnn().length?' 🔴':'')],['setup','⚙️ 設定'],['game','🎯 記錄'],['sum','📊 摘要'],['admin','🛠 後台']]).map(([k,l])=>`<button class="${tab===k?'on':''}" onclick="go('${k}')">${l}</button>`).join('');
+  const g=cg(),s=g&&st(g);
+  $('hd').textContent=g&&tab!=='setup'&&tab!=='home'?`${g.away} vs ${g.home}　${s.half==='top'?'上':'下'}${s.inning}局${g.code?'　#'+g.code:''}`:'';
+  $('main').innerHTML={home:homeView,setup:setupView,game:gameView,sum:sumView,admin:adminView}[tab]();
+  $('main').style.maxWidth=tab==='sum'?'1100px':'760px';
+  if(tab==='home')setTimeout(checkAnn,0);
+}
+const posSel=(k,i)=>`<select onchange="draft.${k}[${i}]=this.value"><option value="">守位</option>${POS.map(p=>`<option ${draft[k][i]===p?'selected':''}>${p}</option>`).join('')}</select>`;
+function parseRoster(t){return t.split('\n').map(l=>l.trim()).filter(Boolean).map(l=>{const m=l.match(/^(\d{1,3})\s+(.+)$/);return m?{n:m[1],name:m[2]}:{n:'',name:l}})}
+function qLineup(){const pool=db.players;return{pool,hl:draft.hl.map((v,i)=>v===''||!pool[v]?null:{n:pool[v].n,name:pool[v].name,pid:pool[v].id,pos:draft.hpos[i]}).filter(Boolean)}}
+function qErr(){const{hl}=qLineup(),ids=draft.hl.filter(v=>v!=='');if(!hl.length)return'請至少選擇 1 位青山B先發球員';if(new Set(ids).size!==ids.length)return'同一位球員不能出現在兩個棒次';return''}
+function oLineup(){return draft.an.map((n,i)=>n.trim()?{n:n.trim(),name:'',pos:draft.apos[i]}:null).filter(Boolean)}
+function oErr(){const al=oLineup();if(!al.length)return'請至少輸入 1 位對手先發背號';if(new Set(al.map(p=>p.n)).size!==al.length)return'對手背號不可重複';return''}
+function qForm(tk){
+  const pool=db.players,opt=sel=>`<option value="">— 選擇球員 —</option>`+pool.map((p,i)=>`<option value="${i}" ${String(sel)===String(i)?'selected':''}>${p.n?'#'+E(p.n)+' ':''}${E(p.name)}</option>`).join('');
+  return`<label>球隊名稱（青山B）</label><input value="${E(draft[tk])}" oninput="draft.${tk}=this.value">
+  <label>先發打序（每棒選擇球員與守位，守位可空白）</label>${[...Array(9)].map((_,i)=>`<div class="lr"><b>${i+1}棒</b><select onchange="draft.hl[${i}]=this.value">${opt(draft.hl[i])}</select>${posSel('hpos',i)}</div>`).join('')}
+  <label>先發投手（可空白，記錄時也能輸入）</label><select onchange="draft.hpi=this.value">${opt(draft.hpi)}</select>
+  <div class="m" style="margin-top:10px;font-size:12px">球員資料與大頭貼請至「後台 → 球員管理」新增或修改。</div>`;
+}
+function oForm(tk){
+  return`<div class="m" style="margin-bottom:6px">僅需輸入背號，不須姓名</div><label>球隊名稱（對手）</label><input value="${E(draft[tk])}" oninput="draft.${tk}=this.value">
+  <label>先發打序（背號＋守位，守位可空白）</label>${[...Array(9)].map((_,i)=>`<div class="lr"><b>${i+1}棒</b><input inputmode="numeric" maxlength="3" placeholder="背號" value="${E(draft.an[i])}" oninput="draft.an[${i}]=this.value">${posSel('apos',i)}</div>`).join('')}
+  <label>先發投手背號（選填）</label><input inputmode="numeric" value="${E(draft.ap)}" oninput="draft.ap=this.value">
+  <label>替補背號（選填，用逗號或空格分隔）</label><input value="${E(draft.asub)}" oninput="draft.asub=this.value">`;
+}
+function setSide(x){if(draft.side===x)return;draft.side=x;[draft.home,draft.away]=[draft.away,draft.home];render()}
+function setupView(){
+  const d=draft,first=d.step==='home',tk=first?'home':'away',isQ=d.side===tk;
+  const cur=cg()?`<div class="card"><b>目前比賽：</b>${E(cg().away)} vs ${E(cg().home)}　<button onclick="go('game')">繼續記錄</button></div>`:'';
+  const toggle=first?`<div class="card"><label style="margin-top:0">青山B 這場比賽擔任</label><div class="g2"><button class="${d.side==='home'?'pri':''}" onclick="setSide('home')">主隊</button><button class="${d.side==='away'?'pri':''}" onclick="setSide('away')">客隊</button></div></div>`:'';
+  const foot=first?`<button class="pri" style="width:100%;margin-top:14px" onclick="confirmHome()">確定主隊名單，下一步：客隊名單</button>`:`<div class="row" style="margin-top:14px"><button onclick="draft.step='home';render()">← 修改主隊</button><button class="pri" style="flex:1" onclick="startGame()">開始比賽</button></div>`;
+  return`${toggle}${first?`<div class="card"><h2>加入現有比賽</h2><div class="row"><input id="jc" inputmode="numeric" maxlength="4" placeholder="輸入 4 位數比賽碼" style="flex:1" onkeydown="if(event.key==='Enter')joinCode()"><button class="pri" onclick="joinCode()">加入</button></div></div>`:''}<div class="card"><h2>${first?'步驟 1／2　主隊名單':'步驟 2／2　客隊名單'}</h2>${first?'':`<div class="m" style="margin-bottom:6px">主隊：${E(d.home)}（已確定）</div>`}${isQ?qForm(tk):oForm(tk)}${foot}</div>${cur}`;
+}
+function confirmHome(){
+  const err=draft.side==='home'?qErr():oErr();
+  if(err){toast(err);return}
+  draft.step='away';render();window.scrollTo(0,0);toast('主隊名單已確定');
+}
+function startGame(){
+  const hs=draft.side==='home',err=hs?oErr():qErr();
+  if(err){toast(err);return}
+  const pool=db.players,q=qLineup(),used=new Set(draft.hl.filter(v=>v!=='')),
+    qAll=q.hl.concat(pool.filter((_,i)=>!used.has(String(i))).map(p=>({n:p.n,name:p.name,pid:p.id,pos:''}))),
+    ol=oLineup(),oAll=ol.concat(draft.asub.split(/[,，\s]+/).filter(Boolean).map(n=>({n,name:'',pos:''}))),
+    qp=pool[draft.hpi],qPit=qp?((qp.n?'#'+qp.n+' ':'')+qp.name):'',oPit=draft.ap.trim()?'#'+draft.ap.trim():'';
+  const g={id:uid(),created:Date.now(),side:draft.side,
+    away:draft.away.trim()||(hs?'對手':'青山B'),home:draft.home.trim()||(hs?'青山B':'對手'),
+    ar:hs?oAll:qAll,hr:hs?qAll:oAll,lu:{away:hs?ol.length:q.hl.length,home:hs?q.hl.length:ol.length},
+    pit:{away:hs?oPit:qPit,home:hs?qPit:oPit},records:[],seq:'',status:'live'};
+  db.games.push(g);db.cur=g.id;selIdx=null;rbiIn='';runIn='';draft.step='home';save();tab='game';render();toast('比賽開始');readyP.then(()=>{if(SY&&canW)shareGame(g)});
+}
+function pitSel(g,fld){
+  const ro=g[fld==='away'?'ar':'hr'],cur=g.pit[fld]||'',isP=ro.filter(p=>p.pos==='P'),rest=ro.filter(p=>p.pos!=='P');
+  const hit=p=>lab(p)===cur||(cur&&p.name===cur);
+  const o=p=>`<option value="${E(lab(p))}" ${hit(p)?'selected':''}>${E(lab(p))}${p.pos?' ('+p.pos+')':''}</option>`;
+  return`<select onchange="if(!roOK(cg())){render();return}cg().pit['${fld}']=this.value;save();syncPit();render()"><option value="">— 選擇投手 —</option>${cur&&!ro.some(hit)?`<option value="${E(cur)}" selected>${E(cur)}</option>`:''}${isP.length?`<optgroup label="投手">${isP.map(o).join('')}</optgroup>`:''}<optgroup label="${isP.length?'其他球員':'全部球員'}">${rest.map(o).join('')}</optgroup></select>`;
+}
+function gameView(){
+  const g=cg(),s=st(g),bat=s.half==='top'?'away':'home',fld=bat==='away'?'home':'away',ro=g[bat==='away'?'ar':'hr'],lu=g.lu?g.lu[bat]:Math.min(9,ro.length);
+  const pa=g.records.filter(r=>r.type==='pa'&&teamOf(r)===bat).length,idx=selIdx??(pa%lu),k=cnt(g.seq),b=s.bases.split('').map(Number);
+  const bp=ro[idx]||{},pp=g[fld==='away'?'ar':'hr'].find(q=>lab(q)===g.pit[fld]);
+  const bd=board(g),base=(on,x,y)=>`<rect x="${x}" y="${y}" width="14" height="14" transform="rotate(45 ${x+7} ${y+7})" fill="${on?'var(--acc2)':'none'}" stroke="var(--m)" stroke-width="2"/>`;
+  if(g.status==='final')return`<div class="card" style="margin-bottom:12px">${bd.html}</div><div class="card">比賽已結束。<button onclick="go('sum')">查看摘要</button> <button onclick="go('setup')">新比賽</button></div>`;
+  const codeCard=g.code?`<div class="card row" style="justify-content:space-between"><span>比賽碼　<b class="mono" style="font-size:22px;letter-spacing:5px">${g.code}</b></span><span class="m" style="font-size:12px">其他人在「設定」輸入此碼即可加入</span></div>`:(SY?`<div class="card"><button onclick="shareGame(cg())">產生比賽碼，讓其他人一起編輯</button></div>`:'');
+  const roBan=(g.code&&SY&&!canW)?`<div class="card m">你目前是「檢視模式」，畫面會即時更新，但無法編輯。</div>`:'';
+  return`${codeCard}${roBan}<div class="card" style="margin-bottom:12px">${bd.html}</div><div class="card row" style="justify-content:space-between"><div><span class="chip">${s.half==='top'?'上':'下'}半 ${s.inning} 局</span> <span class="chip">好 <b>${k.s}</b></span> <span class="chip">壞 <b>${k.b}</b></span> <span class="chip">出局 <b>${s.outs}</b></span></div><svg width="90" height="72" viewBox="0 0 90 72">${base(b[1],38,6)}${base(b[0],66,30)}${base(b[2],10,30)}</svg></div>
+  <div class="card row" style="justify-content:space-around;text-align:center;align-items:flex-start"><div>${av(bp,64)}<div><b>${E(lab(bp))}</b></div><div class="m" style="font-size:12px">${E(g[bat])}・${bp.pos||'打者'}</div></div><b style="font-size:20px;color:var(--acc);align-self:center">VS</b><div>${pp?av(pp,64):av({n:'P'},64)}<div><b>${E(g.pit[fld]||'未設定投手')}</b></div><div class="m" style="font-size:12px">${E(g[fld])}・投手</div></div></div>
+  <div class="card"><div class="g2"><div><label>打者（${E(g[bat])}）</label><select onchange="selIdx=+this.value;render()">${ro.map((p,i)=>`<option value="${i}" ${i===idx?'selected':''}>${i<lu?(i+1)+'棒 ':'替補 '}${p.n?'#'+E(p.n)+' ':''}${E(p.name)}${p.pos?' ('+p.pos+')':''}</option>`).join('')}</select></div><div><label>投手（${E(g[fld])}）</label>${pitSel(g,fld)}</div></div>
+  <label>配球序列</label><div class="mono" style="min-height:22px;letter-spacing:3px">${E(g.seq)}</div>
+  <div class="g4" style="margin-top:8px"><button class="pb" style="background:var(--g)" onclick="pitch('S')">好球</button><button class="pb" style="background:var(--bl)" onclick="pitch('B')">壞球</button><button class="pb" style="background:#c9a227" onclick="pitch('F')">界外</button><button class="pb" style="background:#667" onclick="undoPitch()">←</button></div></div>
+  ${s.bases!=='000'?`<div class="card"><h2>跑壘</h2><div class="g4"><button onclick="openSteal('盜壘成功')">盜壘成功</button><button onclick="openSteal('盜壘失敗')">盜壘失敗</button><button onclick="openSteal('牽制出局')">牽制出局</button></div></div>`:''}
+  <div class="card"><h2>打擊結果</h2><div class="rs">${RESULTS.map(r=>`<button onclick="submit('${r}')">${r}</button>`).join('')}</div>
+  <div style="margin-top:10px;max-width:240px"><label>打點（選填，空白＝自動）</label><input type="number" min="0" max="9" inputmode="numeric" value="${E(rbiIn)}" oninput="rbiIn=this.value"></div><div style="margin-top:8px"><label>備註／特殊情況（選填，會顯示在逐打席紀錄）</label><input value="${E(noteIn)}" oninput="noteIn=this.value" placeholder="例如：守備干擾、野手選擇傳一壘"></div><div class="m" style="font-size:12px;margin-top:6px">壘上有人時，按結果後會先跳出「跑壘確認」視窗，可調整每位跑者去向與得分。</div></div>
+  ${lineupCard(g)}
+  <div class="row"><button onclick="openSub('${bat}')">🔁 球員換人</button><button onclick="openPos('${bat}')">🧭 守位變更</button><button onclick="undoLast()">復原上一筆</button><button class="danger" onclick="endGame()">結束比賽</button></div>`;
+}
+const lab=p=>((p.n?'#'+p.n+' ':'')+p.name).trim()||'(未填)';
+const luOf=(g,t)=>g.lu?g.lu[t]:Math.min(9,g[t==='away'?'ar':'hr'].length);
+const posOpts=c=>`<option value="">（不填）</option>`+POS.map(p=>`<option ${p===c?'selected':''}>${p}</option>`).join('');
+const tsel=(t,fn)=>`<label>球隊</label><select onchange="${fn}(this.value)"><option value="away" ${t==='away'?'selected':''}>${E(cg().away)}</option><option value="home" ${t==='home'?'selected':''}>${E(cg().home)}</option></select>`;
+function lineupCard(g){const t=k=>{const ro=g[k==='away'?'ar':'hr'];return`<div><div style="font-size:12px"><b>${E(g[k])}</b></div>${ro.slice(0,luOf(g,k)).map((p,i)=>`<div style="display:flex;align-items:center;gap:6px;margin:2px 0">${av(p,24)}${i+1}　${E(lab(p))}　<span class="m">${p.pos||'-'}</span></div>`).join('')}</div>`};return`<details class="card"><summary>目前陣容</summary><div class="g2" style="margin-top:8px">${t('away')}${t('home')}</div></details>`}
+const snapOf=g=>JSON.parse(JSON.stringify({ar:g.ar,hr:g.hr,pit:g.pit}));
+const whenOf=g=>{const s=st(g);return`${s.half==='top'?'上':'下'}${s.inning}局`};
+function openSub(team){
+  const g=cg();team=team||'home';const ro=g[team==='away'?'ar':'hr'],lu=luOf(g,team);
+  modal(`<h2>🔁 球員換人</h2>${tsel(team,'openSub')}<label>被換下球員</label><select id="so">${ro.slice(0,lu).map((p,i)=>`<option value="${i}">${i+1}棒 ${E(lab(p))}${p.pos?' ('+p.pos+')':''}</option>`).join('')}</select><label>替補上場（名單中的替補）</label><select id="si"><option value="">— 選擇 —</option>${ro.slice(lu).map((p,i)=>`<option value="${lu+i}">${E(lab(p))}</option>`).join('')}</select><label>或直接輸入替補背號</label><input id="sn" inputmode="numeric" maxlength="3"><label>新守位（空白＝沿用被換下者）</label><select id="sp">${posOpts('')}</select><div class="row" style="margin-top:12px"><button class="pri" onclick="doSub('${team}')">確認換人</button><button onclick="modal('')">取消</button></div><p class="m" style="font-size:12px">被換下的球員不能再上場；換上投手時會自動更新目前投手。</p>`);
+}
+function doSub(team){
+  if(!roOK(cg()))return;
+  const g=cg(),key=team==='away'?'ar':'hr',ro=g[key],lu=luOf(g,team),oi=+$('so').value,bi=$('si').value,mn=$('sn').value.trim(),np=$('sp').value;
+  if(!(oi>=0&&oi<lu)){toast('請選擇被換下球員');return}
+  if(bi===''&&!mn){toast('請選擇替補球員或輸入背號');return}
+  if(mn&&ro.some(p=>p.n===mn)){toast('此背號已在名單中，請從下拉選單選擇');return}
+  const snap=snapOf(g),out=ro[oi];let inP;
+  if(mn)inP={n:mn,name:'',pos:''};else inP=ro.splice(+bi,1)[0];
+  inP.pos=np||out.pos||'';ro[oi]=inP;if(inP.pos==='P')g.pit[team]=lab(inP);
+  push(g,{type:'sub',result:'換人',batter:'',pitcher:'',seq:'',snap,note:`${whenOf(g)} ${g[team]}：${lab(out)}(${out.pos||'-'}) → ${lab(inP)}(${inP.pos||'-'})`});
+  modal('');render();toast('換人完成');
+}
+function openPos(team){
+  const g=cg();team=team||'home';const ro=g[team==='away'?'ar':'hr'],lu=luOf(g,team);
+  modal(`<h2>🧭 守位變更</h2>${tsel(team,'openPos')}<label>球員</label><select id="po">${ro.slice(0,lu).map((p,i)=>`<option value="${i}">${i+1}棒 ${E(lab(p))}${p.pos?' ('+p.pos+')':''}</option>`).join('')}</select><label>新守位</label><select id="pn">${posOpts('')}</select><div class="row" style="margin-top:12px"><button class="pri" onclick="doPos('${team}')">確認變更</button><button onclick="modal('')">取消</button></div>`);
+}
+function doPos(team){
+  if(!roOK(cg()))return;
+  const g=cg(),ro=g[team==='away'?'ar':'hr'],p=ro[+$('po').value],np=$('pn').value;
+  if(!p)return;if((p.pos||'')===np){toast('守位沒有變更');return}
+  const snap=snapOf(g),old=p.pos;p.pos=np;if(np==='P')g.pit[team]=lab(p);
+  push(g,{type:'pos',result:'守位變更',batter:'',pitcher:'',seq:'',snap,note:`${whenOf(g)} ${g[team]}：${lab(p)} ${old||'-'} → ${np||'-'}`});
+  modal('');render();toast('守位已變更');
+}
+/* ---------- 比賽碼 / 多人同步 ---------- */
+/* ---------- Supabase 連線層：用與原本相同的介面（doc / collection / onSnapshot）包裝 Supabase ---------- */
+async function qbRpc(fn,args){const{data,error}=await sb.rpc(fn,args);if(error){const e=new Error(error.message||String(error));e.code=error.code;throw e}return data}
+function authFail(e){
+  const m=(e&&e.message)||String(e);
+  if(/unauthorized/.test(m)){token=null;role=null;roleName='';canAdm=false;staffLoaded=false;toast('登入已逾時或無權限，請重新登入後台');go('home')}
+  else toast('操作失敗：'+m);
+}
+function mkShim(){
+  const rowMeta=r=>({away:r.away,home:r.home,ar:r.ar,hr:r.hr,lu:r.lu,pit:r.pit,status:r.status,side:r.side,seq:r.seq,stash:r.stash,sc:r.sc,upd:Number(r.upd)||0,created:Number(r.created)||0});
+  const maps={
+    games:{t:'qb_games',m:r=>({id:r.code,data:rowMeta(r)})},
+    players:{t:'qb_players',m:r=>({id:r.id,data:{id:r.id,n:r.n,name:r.name,photo:r.photo,ord:Number(r.ord)}})},
+    announcements:{t:'qb_announcements',m:r=>({id:r.id,data:{id:r.id,title:r.title,body:r.body,pin:r.pin,by:r.author,t:Number(r.t)}})}
+  };
+  const q=async p=>{const{data,error}=await p;if(error)throw error;return data};
+  const snapDocs=list=>({docs:list.map(d=>({id:d.id,exists:true,data:()=>d.data,metadata:{fromCache:false}})),metadata:{fromCache:false}});
+  const watch=(table,filter,load,cb,err)=>{
+    let dead=false,t=null;
+    const run=async()=>{if(dead)return;try{cb(await load())}catch(e){if(err)err(e)}};
+    run();
+    const ch=sb.channel(table+'-'+Math.random().toString(36).slice(2)).on('postgres_changes',Object.assign({event:'*',schema:'public',table},filter?{filter}:{}),()=>{clearTimeout(t);t=setTimeout(run,250)}).subscribe();
+    const iv=setInterval(run,20000); // 即時通道失效時的備援輪詢
+    return()=>{dead=true;clearInterval(iv);clearTimeout(t);try{sb.removeChannel(ch)}catch(e){}};
+  };
+  return{
+    doc(path){
+      const code=path.split('/')[1];
+      const one=async()=>{const rows=await q(sb.from('qb_games').select('*').eq('code',code).limit(1));return rows&&rows[0]};
+      const snap=r=>({id:code,exists:!!r,data:()=>r?rowMeta(r):undefined,metadata:{fromCache:false}});
+      return{
+        get:async()=>snap(await one()),
+        set:async d=>{await qbRpc('qb_put_game',{p_code:code,p:d})},
+        update:async d=>{await qbRpc('qb_update_game',{p_code:code,p:d})},
+        delete:async()=>{await qbRpc('qb_admin_delete_game',{p_token:token,p_code:code})},
+        onSnapshot:(cb,err)=>watch('qb_games','code=eq.'+code,async()=>snap(await one()),cb,err)
+      };
+    },
+    collection(path){
+      const parts=path.split('/');
+      if(parts.length===3&&parts[2]==='records'){
+        const code=parts[1];
+        const load=async()=>snapDocs((await q(sb.from('qb_records').select('id,t,data').eq('code',code).order('t',{ascending:true}).limit(5000))).map(r=>({id:r.id,data:r.data})));
+        return{
+          doc:id=>({
+            set:async r=>{await qbRpc('qb_put_record',{p_code:code,p_id:id,p_t:r.t,p_data:r})},
+            delete:async()=>{try{await qbRpc('qb_undo_record',{p_code:code,p_id:id})}catch(e){if(token&&role==='admin')await qbRpc('qb_admin_delete_record',{p_token:token,p_code:code,p_id:id});else throw e}}
+          }),
+          get:load,
+          onSnapshot:(cb,err)=>watch('qb_records','code=eq.'+code,load,cb,err)
+        };
+      }
+      const name=parts[0],mp=maps[name];
+      const load=async()=>snapDocs((await q(sb.from(mp.t).select('*'))).map(mp.m));
+      return{
+        doc:id=>({
+          set:async o=>{if(name==='players')await qbRpc('qb_upsert_player',{p_token:token,p:o});else throw new Error('unsupported')},
+          delete:async()=>{if(name==='players')await qbRpc('qb_delete_player',{p_token:token,p_id:id});else if(name==='announcements')await qbRpc('qb_delete_announcement',{p_token:token,p_id:id});else throw new Error('unsupported')}
+        }),
+        get:load,
+        onSnapshot:(cb,err)=>watch(mp.t,null,load,cb,err)
+      };
+    }
+  };
+}
+const readyP=(async()=>{
+  await null; // 等整份腳本（含後面的 let 宣告）執行完再啟動連線
+  try{if(STATIC)return;sb=supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:false,autoRefreshToken:false}});SY=mkShim();canW=true;canAdm=false}catch(e){SY=null;toast('無法連線到伺服器')}
+  const g=cg();if(SY){subAnn();subPlayers();subGames()}if(SY&&g&&g.code)attach(g);render()})();
+const GD=c=>SY.doc('games/'+c),RC=c=>SY.collection('games/'+c+'/records');
+const clone=o=>JSON.parse(JSON.stringify(o));
+const metaOf=g=>clone({away:g.away,home:g.home,ar:g.ar,hr:g.hr,lu:g.lu,pit:g.pit,status:g.status,side:g.side,seq:g.seq||'',stash:g.stash||[],created:g.created,sc:g.sc||{a:0,h:0},upd:g.upd||0});
+function roOK(g){if(g&&g.code&&SY&&!canW){toast('你目前只有檢視權限，無法編輯（請向擁有者索取「可編輯」權限）');return false}return true}
+async function wr(fn){if(!SY||!canW)return;try{await fn()}catch(e){toast('同步失敗：'+(e&&e.code==='invalid_argument'?'沒有編輯權限':'請檢查網路'))}}
+function syncMeta(g,patch){if(g&&g.code)wr(()=>GD(g.code).update(clone(patch)))}
+function syncRec(g,r){if(g.code)wr(()=>RC(g.code).doc(r.id).set(clone(r)))}
+function syncDel(g,id){if(g.code)wr(()=>RC(g.code).doc(id).delete())}
+function syncScore(g){if(!g||!g.code)return;const T=board(g).T,x=st(g);g.sc={a:T.away.r,h:T.home.r,inn:x.inning,half:x.half};g.upd=Date.now();syncMeta(g,{sc:g.sc,upd:g.upd})}
+function syncPit(){const g=cg();syncMeta(g,{pit:g.pit})}
+let annSeeded=true;
+function subAnn(){
+  unsubs0=SY.collection('announcements').onSnapshot(q=>{
+    if(!q.docs.length&&!q.metadata.fromCache&&db.ann.length&&canW&&!annSeeded){annSeeded=true;db.ann.forEach(a=>wr(()=>SY.collection('announcements').doc(a.id).set(clone(a))));return}
+    const rem=q.docs.map(d=>clone(d.data())),ids=new Set(rem.map(x=>x.id));db.ann=rem.concat(db.ann.filter(a=>a.local&&!ids.has(a.id)));save();softRender()},()=>{});
+}
+let unsubs0=null,unsubs1=null;
+function subGames(){
+  SY.collection('games').onSnapshot(q=>{
+    const seen=new Set();
+    q.docs.forEach(d=>{
+      const m=clone(d.data()),code=d.id;seen.add(code);let g=db.games.find(x=>x.code===code);
+      if(!g){g={...m,id:uid(),code,records:[],seq:m.seq||'',stash:m.stash||[],sync:true};db.games.push(g)}
+      else if(!unsubMap[code])Object.assign(g,{away:m.away,home:m.home,ar:m.ar,hr:m.hr,lu:m.lu,pit:m.pit,status:m.status,side:m.side,sc:m.sc,upd:m.upd,sync:true});
+      else{g.sc=m.sc;g.upd=m.upd;g.sync=true}
+    });
+    if(!q.metadata.fromCache){
+      const gone=db.games.filter(g=>g.code&&g.sync&&!seen.has(g.code));
+      if(gone.length){gone.forEach(g=>detach(g.code));db.games=db.games.filter(g=>!gone.includes(g));if(db.cur&&!db.games.some(g=>g.id===db.cur))db.cur=null}
+    }
+    save();softRender();
+  },()=>{});
+}
+function publicDlg(){
+  if(needAdmin())return;
+  modal(`<h2>🌐 匯出展示頁</h2><div style="line-height:1.7;font-size:13px">產生一個<b>不需要任何伺服器</b>、也不需登入就能開啟的 HTML 檔，把它放到任何網站（例如學校網站、GitHub Pages、Netlify）即可公開。<br><br>內含：公告、球員（含大頭貼）、所有比賽的比分、成績與逐打席紀錄。<br>不含：後台使用者帳號、比賽碼。<br>這是「快照」：檔案只是匯出當下的資料，之後有新公告或新比賽要重新匯出、重新上傳。</div><div class="row" style="margin-top:12px"><button class="pri" onclick="exportPublic()">產生並下載</button><button onclick="modal('')">取消</button></div>`);
+}
+async function exportPublic(){
+  if(needAdmin())return;
+  const css=$('app-css'),src=$('app-src');
+  if(!css||!src){toast('無法讀取頁面程式碼，請重新整理後再試');return}
+  toast('正在整理資料…');
+  if(SY){for(const g of db.games){if(g.code&&!g.records.length&&g.sync){try{const q=await RC(g.code).get();g.records=q.docs.map(d=>clone(d.data())).sort((a,b)=>(a.t-b.t)||(a.id<b.id?-1:1));replay(g)}catch(e){}}}}
+  const snap={generated:Date.now(),
+    ann:db.ann.map(a=>({id:a.id,title:a.title,body:a.body,t:a.t,pin:a.pin,by:a.by})),
+    players:db.players.map(p=>({id:p.id,n:p.n,name:p.name,photo:p.photo||'',ord:p.ord})),
+    games:db.games.filter(g=>g.records.length||g.sc).map(g=>({id:g.id,away:g.away,home:g.home,ar:g.ar,hr:g.hr,lu:g.lu,pit:g.pit,status:g.status,side:g.side,created:g.created,sc:g.sc,seq:'',records:g.records.map(r=>{const x={...r};delete x.snap;return x})}))};
+  const json=JSON.stringify(snap).replace(/</g,'\\u003c');
+  const html='<!doctype html>\n<html lang="zh-TW"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><title>青山B 棒球隊</title><style>'+css.textContent+'</style></head><body><header><b>⚾ 青山B 比賽紀錄</b><span id="hd"></span></header><main id="main"></main><nav id="nav"></nav><div id="modal"></div><div id="toast"></div><script>window.__STATIC='+json+';<\/script><script>'+src.textContent+'<\/script></body></html>';
+  modal('');await dl('qinghan-baseball-public.html',html);
+}
+let uploading=false;
+async function putRetry(fn){for(let i=0;i<4;i++){try{await fn();return true}catch(e){if(e&&e.code==='resource_exhausted'){await new Promise(r=>setTimeout(r,700*(i+1)));continue}return false}}return false}
+async function uploadGame(g){
+  let code=g.code;
+  if(!code){for(let i=0;i<8&&!code;i++){const c=String(Math.floor(Math.random()*10000)).padStart(4,'0');const x=await GD(c).get();if(!x.exists)code=c}if(!code)throw new Error('code');g.code=code}
+  if(!g.sync)await GD(code).set(metaOf(g));
+  g.sync=true;let ok=0;
+  for(const r of g.records){if(await putRetry(()=>RC(code).doc(r.id).set(clone(r))))ok++}
+  attach(g);return{ok,total:g.records.length};
+}
+async function uploadAll(){
+  if(needAdmin())return;
+  if(uploading)return;
+  await readyP;
+  if(!SY){toast('尚未連上伺服器，請稍後再試');return}
+  if(!canW){toast('你沒有共用資料庫的寫入權限，無法上傳');return}
+  uploading=true;const btn=$('upbtn');if(btn){btn.disabled=true;btn.textContent='上傳中…'}
+  const R=[];
+  const batch=async(name,list,col,needAdm)=>{
+    if(needAdm&&!canAdm){R.push(`${name}：略過（沒有管理權限，需平台擁有者或編輯者）`);return}
+    let ok=0;for(const it of list){const x={...it};delete x.local;if(await putRetry(()=>SY.collection(col).doc(x.id).set(clone(x)))){ok++;it.local=false}}
+    R.push(`${name}：${ok}／${list.length} 筆${ok<list.length?' ⚠️ 有失敗':' ✔'}`);
+  };
+  try{
+    db.players.forEach((p,i)=>{if(p.ord===undefined)p.ord=i});
+    await batch('球員與大頭貼',db.players,'players',true);
+    await batch('後台使用者',db.users,'users',true);
+    await batch('公告',db.ann,'announcements',false);
+    const gs=db.games.filter(g=>!(g.sync&&!g.records.length));let gok=0,rok=0,rall=0,gfail=0;
+    for(const g of gs){try{const r=await uploadGame(g);gok++;rok+=r.ok;rall+=r.total}catch(e){gfail++}}
+    R.push(`比賽：${gok}／${gs.length} 場，紀錄 ${rok}／${rall} 筆${gfail||rok<rall?' ⚠️ 有失敗':' ✔'}`);
+    db.lastUpload=Date.now();save();
+  }catch(e){R.push('發生錯誤：'+(e&&e.message||'未知'))}
+  uploading=false;
+  modal(`<h2>⬆️ 上傳結果</h2><div style="line-height:1.9">${R.map(E).join('<br>')}</div><div class="m" style="font-size:12px;margin-top:8px">已存在的資料會被覆蓋為這台裝置的版本。</div><button class="pri" style="width:100%;margin-top:10px" onclick="modal('')">確定</button>`);
+  render();
+}
+let playersSeeded=false;
+function subPlayers(){
+  SY.collection('players').onSnapshot(q=>{
+    const rem=q.docs.map(d=>clone(d.data()));
+    if(!rem.length){
+      if(!q.metadata.fromCache&&canAdm&&canW&&!playersSeeded&&db.players.length){playersSeeded=true;db.players.forEach((p,i)=>{if(p.ord===undefined)p.ord=i;wr(()=>SY.collection('players').doc(p.id).set(clone(p)))});save()}
+      return;
+    }
+    db.players=rem.sort((a,b)=>(a.ord??1e12)-(b.ord??1e12));save();softRender();
+  },()=>{});
+}
+function unseenAnn(){let seen=[];try{seen=JSON.parse(localStorage.getItem('qb2seen')||'[]')}catch(e){}return db.ann.filter(a=>!seen.includes(a.id)&&!seenMem.has(a.id))}
+const seenMem=new Set();
+function checkAnn(){
+  if(tab!=='home'||$('modal').innerHTML)return;
+  const un=unseenAnn().sort((a,b)=>b.t-a.t).slice(0,3);if(!un.length)return;
+  let seen=[];try{seen=JSON.parse(localStorage.getItem('qb2seen')||'[]')}catch(e){}
+  db.ann.forEach(a=>{seenMem.add(a.id);if(!seen.includes(a.id))seen.push(a.id)});
+  try{localStorage.setItem('qb2seen',JSON.stringify(seen.slice(-300)))}catch(e){}
+  modal(`<h2>📢 最新公告</h2>${un.map(a=>`<div style="margin-bottom:12px"><b>${a.pin?'📌 ':''}${E(a.title)}</b><div class="m" style="font-size:12px">${new Date(a.t).toLocaleDateString('zh-TW')}${a.by?'　'+E(a.by):''}</div><div style="white-space:pre-line">${E(a.body)}</div></div>`).join('')}<button class="pri" style="width:100%" onclick="modal('')">我知道了</button>`);
+}
+function subUsers(){
+  unsubs1=SY.collection('users').onSnapshot(q=>{const rem=q.docs.map(d=>clone(d.data())),ids=new Set(rem.map(x=>x.id));
+    if(!rem.length&&!q.metadata.fromCache&&canAdm&&canW&&db.users.length){db.users.forEach(u=>{u.local=false;wr(()=>SY.collection('users').doc(u.id).set(clone(u)))});save();return}
+    db.users=rem.concat(db.users.filter(u=>u.local&&!ids.has(u.id)));save();softRender()},()=>{});
+}
+async function addUser(){
+  if(needAdmin())return;
+  const nm=$('un').value.trim(),pw=$('up').value;
+  if(!nm){toast('請輸入帳號');return}
+  if(pw.length<6){toast('密碼至少 6 個字元');return}
+  if(db.users.some(u=>u.name===nm)){toast('此帳號已存在');return}
+  const salt=uid()+uid(),hash=await sha(salt+pw);if(!hash){toast('此環境不支援密碼驗證');return}
+  const u={id:uid(),name:nm,salt,hash,created:Date.now(),local:!(SY&&canAdm)};
+  db.users.push(u);save();
+  if(SY&&canAdm)wr(()=>SY.collection('users').doc(u.id).set(clone({...u,local:false})));
+  render();toast(u.local?'已新增（只存在這個瀏覽器：沒有共用資料庫的管理權限，其他裝置無法使用此帳號）':'已新增後台使用者');
+}
+function delUser(id){if(needAdmin())return;const u=db.users.find(x=>x.id===id);modal(`<h2>刪除使用者？</h2><p>${E(u?u.name:'')}</p><div class="row"><button class="pri" onclick="doDelUser('${id}')">刪除</button><button onclick="modal('')">取消</button></div>`)}
+function doDelUser(id){if(needAdmin())return;db.users=db.users.filter(u=>u.id!==id);save();if(SY&&canAdm)wr(()=>SY.collection('users').doc(id).delete());modal('');render();toast('已刪除')}
+function usersAdmin(){
+  return`<div class="card"><h2>新增後台使用者</h2><div class="g2"><div><label>帳號</label><input id="un" autocomplete="off"></div><div><label>密碼（至少 6 字元）</label><input id="up" type="password" autocomplete="new-password"></div></div><button class="pri" style="margin-top:10px" onclick="addUser()">新增使用者</button><p class="m" style="font-size:12px">後台使用者只能「發布公告」與「查看比賽紀錄、匯出 Excel」，不能刪除或修改任何資料，也不能管理球員與使用者。</p></div>
+  <div class="card"><h2>後台使用者（${db.users.length}）</h2>${db.users.map(u=>`<div class="row" style="justify-content:space-between;padding:8px 0;border-top:1px solid var(--bd)"><div><b>${E(u.name)}</b><div class="m" style="font-size:12px">${new Date(u.created).toLocaleDateString('zh-TW')}${u.local?'　僅存在此瀏覽器':''}</div></div><button class="danger" onclick="delUser('${u.id}')">刪除</button></div>`).join('')||'<div class="m">尚無使用者</div>'}</div>`;
+}
+function attachedCode(){const g=cg();return g&&g.code}
+const unsubMap={};
+function detach(code){if(code){(unsubMap[code]||[]).forEach(u=>{try{u()}catch(e){}});delete unsubMap[code]}else Object.keys(unsubMap).forEach(c=>detach(c))}
+function softRender(){const a=document.activeElement;if(a&&/INPUT|TEXTAREA/.test(a.tagName)&&$('main').contains(a)){clearTimeout(rt);rt=setTimeout(softRender,1500);return}render()}
+function attach(g){
+  if(!SY||!g||!g.code||unsubMap[g.code])return;
+  const keys=Object.keys(unsubMap);if(keys.length>=20){const cc=attachedCode();const old=keys.find(k=>k!==cc);if(old)detach(old)}
+  const arr=unsubMap[g.code]=[];
+  arr.push(GD(g.code).onSnapshot(sn=>{if(!sn.exists)return;const m=clone(sn.data());Object.assign(g,{away:m.away,home:m.home,ar:m.ar,hr:m.hr,lu:m.lu,pit:m.pit,status:m.status,side:m.side,seq:m.seq||'',stash:m.stash||[],sc:m.sc,upd:m.upd,sync:true});save();softRender()},()=>{}));
+  arr.push(RC(g.code).onSnapshot(q=>{g.records=q.docs.map(d=>clone(d.data())).sort((a,b)=>(a.t-b.t)||(a.id<b.id?-1:1));replay(g);save();softRender()},()=>{}));
+}
+async function shareGame(g){
+  if(!SY){toast('尚未連上伺服器，請稍後再試');return}
+  if(!canW){toast('你沒有編輯權限，無法建立比賽碼');return}
+  try{
+    let code='';
+    for(let i=0;i<8&&!code;i++){const c=String(Math.floor(Math.random()*10000)).padStart(4,'0');const x=await GD(c).get();if(!x.exists)code=c}
+    if(!code){toast('產生比賽碼失敗，請重試');return}
+    await GD(code).set(metaOf(g));
+    g.code=code;g.sync=true;save();
+    for(const r of g.records)await RC(code).doc(r.id).set(clone(r));
+    attach(g);render();toast('比賽碼：'+code);
+  }catch(e){toast('建立比賽碼失敗，請稍後再試')}
+}
+async function joinCode(){
+  const code=($('jc').value||'').trim();
+  if(!/^\d{4}$/.test(code)){toast('請輸入 4 位數比賽碼');return}
+  await readyP;
+  if(!SY){toast('尚未連上伺服器，請稍後再試');return}
+  try{
+    const x=await GD(code).get();if(!x.exists){toast('找不到此比賽碼');return}
+    let g=db.games.find(y=>y.code===code);
+    if(!g){const m=clone(x.data());g={...m,id:uid(),code,records:[],seq:m.seq||''};db.games.push(g)}
+    db.cur=g.id;save();attach(g);tab='game';render();toast('已加入比賽 '+code+(canW?'':'（僅檢視）'));
+  }catch(e){toast('加入失敗，請確認已登入並有權限')}
+}
+async function purgeRemote(g){if(!SY||!g.code||!canW)return;try{for(const r of g.records)await RC(g.code).doc(r.id).delete();await GD(g.code).delete()}catch(e){}}
+function ok(g){
+  if(!roOK(g))return null;
+  const s=st(g),bat=s.half==='top'?'away':'home',fld=bat==='away'?'home':'away';
+  if(!g.pit[fld]){toast('請先輸入投手');return null}
+  const ro=g[bat==='away'?'ar':'hr'],lu=g.lu?g.lu[bat]:Math.min(9,ro.length),pa=g.records.filter(r=>r.type==='pa'&&teamOf(r)===bat).length,ix=selIdx??(pa%lu),p=ro[ix];
+  return{s,batter:((p.n?'#'+p.n+' ':'')+p.name).trim(),pitcher:g.pit[fld],slot:ix<lu?ix+1:0,pos:p.pos||''};
+}
+function pitch(c){const g=cg(),o=ok(g);if(!o)return;g.seq+=c;const k=cnt(g.seq);save();syncMeta(g,{seq:g.seq});if(k.s>=3){submit('三振');return}if(k.b>=4){submit('四壞');return}render()}
+function undoPitch(){const g=cg();if(!roOK(g))return;g.seq=g.seq.slice(0,-1);save();syncMeta(g,{seq:g.seq});render()}
+function push(g,r){const s=st(g);r.id=uid();r.t=Date.now();r.inning=s.inning;r.half=s.half;apply(s,r);g.records.push(r);if(r.type==='pa'){if(!Array.isArray(g.stash))g.stash=[];g.seq=g.stash.pop()||'';selIdx=null;rbiIn='';runIn='';noteIn=''}save();syncRec(g,r);if(r.type==='pa')syncMeta(g,{seq:g.seq,stash:g.stash});if(r.type==='sub'||r.type==='pos')syncMeta(g,{ar:g.ar,hr:g.hr,pit:g.pit});syncScore(g)}
+function submit(result){
+  const g=cg(),o=ok(g);if(!o)return;
+  const s=o.s;let seq=g.seq,note='';
+  if(result==='不死三振'){
+    if(cnt(seq).s<3)seq+='S';
+    if(s.bases[0]==='1'&&s.outs<2){result='三振';note='（一壘有人且未滿兩出局，打者直接出局）'}
+  }
+  if(result==='雙殺'&&s.bases==='000'){toast('壘上沒有跑者，無法雙殺');return}
+  const need=result==='雙殺'||result==='其他'||(s.bases!=='000'&&!['三振','四壞','觸身球'].includes(result));
+  if(need){openRes(result,o,seq,note);return}
+  commitPa(g,o,result,seq,null,rbiIn===''?null:Math.max(0,parseInt(rbiIn)||0),note);
+}
+function commitPa(g,o,result,seq,res,rb,note){
+  const r={type:'pa',batter:o.batter,pitcher:o.pitcher,seq,result,rbiM:rb,slot:o.slot,pos:o.pos};if(res)r.res=res;if(noteIn.trim())r.note=noteIn.trim();
+  push(g,r);const x=g.records[g.records.length-1];render();
+  toast((x.runs?`${result}，得 ${x.runs} 分，打點 ${x.rbi}`:`${result} 已記錄`+(x.rbi?`，打點 ${x.rbi}`:''))+(note||''));
+}
+let RS=null;
+const DN=['出局','一壘','二壘','三壘','得分'];
+const resOpts=(min,cur,stay)=>{const a=[0];for(let k=min;k<=3;k++)a.push(k);a.push(4);return a.map(k=>`<option value="${k}" ${k===cur?'selected':''}>${DN[k]}${stay&&k===min?'（原壘）':''}</option>`).join('')};
+function landOf(s,res){const l=[0,0,0,0];s.bases.split('').forEach((c,i)=>{if(c==='1'&&res.m[i]>=1&&res.m[i]<=3)l[res.m[i]]++});if(res.b>=1&&res.b<=3)l[res.b]++;return l}
+function openRes(result,o,seq,note){const d=defaultRes(result,o.s.bases,o.s.outs);RS={result,o,seq,note,res:{b:d.b,m:d.m,tp:false},rbi:rbiIn};drawRes()}
+function drawRes(){
+  const{result,o,res}=RS,s=o.s,out=resolve(s,{result,batter:o.batter,res}),clash=landOf(s,res).some(x=>x>1);
+  const rows=[0,1,2].filter(i=>s.bases[i]==='1').map(i=>`<div class="lr2"><span>${BN[i]}　${E((s.rn&&s.rn[i])||'跑者')}</span><select onchange="RS.res.m[${i}]=+this.value;drawRes()">${resOpts(i+1,res.m[i],true)}</select></div>`).join('');
+  const tpNeed=s.outs+out.outsAdd>=3&&out.sc>0,auto=NO_RBI.includes(result)?0:out.runs;
+  modal(`<h2>${E(result)}　確認跑壘結果</h2><div class="m" style="font-size:12px;margin-bottom:8px">已依規則預設，可逐一修改每位跑者與打者的去向。</div>${rows}<div class="lr2"><span><b>打者　${E(o.batter)}</b></span><select onchange="RS.res.b=+this.value;drawRes()">${resOpts(1,res.b,false)}</select></div>
+  <div class="row" style="margin:8px 0"><button onclick="resAll()">跑者全進一壘</button><span class="chip">本打席 ${out.outsAdd} 出局（累計 ${s.outs+out.outsAdd}）</span><span class="chip">得分 <b>${out.runs}</b></span></div>
+  ${clash?'<div style="color:var(--acc);margin-bottom:6px">兩人不能在同一個壘包，請調整。</div>':''}
+  ${tpNeed?`<label style="display:flex;gap:8px;align-items:flex-start;color:var(--t)"><input type="checkbox" style="width:auto;margin-top:3px" ${res.tp?'checked':''} onchange="RS.res.tp=this.checked;drawRes()"><span>第三出局前已踏本壘，計入得分（Time Play）。勾選後這 ${out.sc} 分才會計入。</span></label>`:''}
+  <label>打點（空白＝自動 ${auto}）</label><input type="number" min="0" max="9" inputmode="numeric" value="${E(RS.rbi)}" oninput="RS.rbi=this.value">
+  <div class="row" style="margin-top:12px"><button class="pri" onclick="doRes()">確認記錄</button><button onclick="modal('')">取消</button></div>`);
+}
+function resAll(){const s=RS.o.s;RS.res.m=RS.res.m.map((d,i)=>s.bases[i]==='1'&&d!==0?Math.min(4,i+2):d);drawRes()}
+function doRes(){
+  const{result,o,seq,note,res}=RS,s=o.s,g=cg(),out=resolve(s,{result,batter:o.batter,res});
+  if(landOf(s,res).some(x=>x>1)){toast('兩人不能在同一個壘包');return}
+  if(s.outs+out.outsAdd>3){toast('出局數超過 3 個，請檢查');return}
+  const rb=RS.rbi===''?null:Math.max(0,parseInt(RS.rbi)||0);
+  modal('');commitPa(g,o,result,seq,{b:res.b,m:res.m.slice(),tp:!!res.tp},rb,note);
+}
+const BN=['一壘','二壘','三壘'];
+let stealTrk=['','',''];
+function openSteal(action){
+  const g=cg(),s=st(g),bat=s.half==='top'?'away':'home',ro=g[bat==='away'?'ar':'hr'],b=s.bases.split('');
+  stealTrk=[0,1,2].map(i=>(s.rn&&s.rn[i])||'');
+  const si=(b[0]==='1'&&b[1]!=='1')?0:(b[1]==='1'&&b[2]!=='1')?1:b[2]==='1'?2:b.indexOf('1');
+  if(si<0){toast('壘上沒有跑者');return}
+  const names=ro.map(lab);stealTrk.forEach(t=>{if(t&&!names.includes(t))names.push(t)});
+  modal(`<h2>${E(action)}</h2><label>哪個壘包的跑者</label><select id="sb" onchange="$('sr').value=stealTrk[+this.value]||''">${[0,1,2].map(i=>b[i]==='1'?`<option value="${i}" ${i===si?'selected':''}>${BN[i]}${stealTrk[i]?'　'+E(stealTrk[i]):''}</option>`:'').join('')}</select><label>跑者（球員姓名或背號，可更正）</label><select id="sr"><option value="">（未指定）</option>${names.map(n=>`<option value="${E(n)}" ${n===stealTrk[si]?'selected':''}>${E(n)}</option>`).join('')}</select><div class="row" style="margin-top:12px"><button class="pri" onclick="doSteal('${action}')">確認</button><button onclick="modal('')">取消</button></div>`);
+}
+function doSteal(action){
+  if(!roOK(cg()))return;
+  const g=cg(),s=st(g),b=s.bases.split(''),bi=+$('sb').value,who=$('sr').value;
+  if(action==='盜壘成功'&&bi<2&&b[bi+1]==='1'){toast(`${BN[bi+1]}已有跑者，請先記錄前方跑者`);return}
+  const to=action==='盜壘成功'?(bi===2?'本壘':BN[bi+1]):'';
+  const note=action==='盜壘成功'?`${who||'跑者'}：${BN[bi]} → ${to}`:`${who||'跑者'}：${BN[bi]}`;
+  push(g,{type:'run',result:action,base:bi,runner:who,batter:who,pitcher:g.pit[s.half==='top'?'home':'away']||'',seq:'',note});
+  modal('');render();toast(`${who||'跑者'} ${action}`);
+}
+function undoLast(){const g=cg();if(!g.records.length){toast('沒有可復原的紀錄');return}if(!roOK(g))return;const x=g.records.pop();if(x.snap){g.ar=x.snap.ar;g.hr=x.snap.hr;g.pit=x.snap.pit;syncMeta(g,{ar:g.ar,hr:g.hr,pit:g.pit})}else if(x.type==='pa'){if(!Array.isArray(g.stash))g.stash=[];if(g.seq)g.stash.push(g.seq);g.seq=(['三振','四壞'].includes(x.result)&&/[SB]$/.test(x.seq||'')?x.seq.slice(0,-1):(x.seq||''));syncMeta(g,{seq:g.seq,stash:g.stash})}syncDel(g,x.id);syncScore(g);save();render();toast('已復原')}
+function endGame(){modal(`<h2>結束比賽？</h2><p>結束後將無法繼續記錄這場比賽。</p><div class="row"><button class="pri" onclick="const g=cg();if(roOK(g)){g.status='final';save();syncMeta(g,{status:'final'})}modal('');render()">確定結束</button><button onclick="modal('')">取消</button></div>`)}
+const BNs=['一壘','二壘','三壘'];
+const diamond=(b,z)=>{const q=(x,y,i)=>`<rect x="${x}" y="${y}" width="12" height="12" transform="rotate(45 ${x+6} ${y+6})" fill="${b[i]==='1'?'var(--acc2)':'none'}" stroke="var(--m)" stroke-width="2"/>`;return`<svg width="${z}" height="${Math.round(z*.78)}" viewBox="0 0 72 56">${q(30,4,1)}${q(54,24,0)}${q(6,24,2)}</svg>`};
+const dots=(n,t,c)=>Array.from({length:t},(_,i)=>`<span style="display:inline-block;width:11px;height:11px;border-radius:50%;margin-right:3px;border:2px solid ${i<n?c:'var(--bd)'};background:${i<n?c:'transparent'}"></span>`).join('');
+const destTxt=d=>d===0?'出局':d>=4?'回本壘得分':'進到'+['','一壘','二壘','三壘'][d];
+function pitchList(r){
+  let b=0,s=0;const rows=[];
+  [...(r.seq||'')].forEach((c,k)=>{if(c==='B')b++;else if(c==='S')s++;else if(c==='F'&&s<2)s++;
+    rows.push(`<div class="pl"><span class="pn" style="background:${c==='B'?'var(--g)':'var(--acc2)'}">${k+1}</span><span>${c==='B'?'壞球':c==='S'?'好球':'界外球'}</span><b>${b}-${s}</b></div>`)});
+  rows.push(`<div class="pl"><span class="pn" style="background:var(--acc2)">${rows.length+1}</span><span>${E(r.result)}</span><b>${b}-${s}</b></div>`);
+  return rows.join('');
+}
+const SHORT={'一安':'一安','二安':'二安','三安':'三安','全壘打':'全打','飛球出局':'飛球','滾地出局':'滾地','三振':'三振','不死三振':'不死三','四壞':'四壞','犧牲打':'犧打','雙殺':'雙殺','失誤':'失誤','野選':'野選','觸身球':'觸身','其他':'其他'};
+const DESC={'一安':'擊出一壘安打','二安':'擊出二壘安打','三安':'擊出三壘安打','全壘打':'擊出全壘打','飛球出局':'擊出飛球被接殺出局','滾地出局':'擊出滾地球出局','三振':'三振出局','不死三振':'三振，捕手漏接','四壞':'四壞球保送上壘','觸身球':'觸身球上壘','犧牲打':'擊出犧牲打','雙殺':'擊出雙殺打','失誤':'因守備失誤上壘','野選':'野手選擇','其他':'其他狀況'};
+const chipClr=r=>isHit(r)?'var(--bl)':(r==='四壞'||r==='觸身球')?'var(--g)':'#7a8497';
+function runnerTxt(r,i){const m=(r.mv||[]).find(x=>x.i===i);return m?`${m.who||'跑者'} → ${m.d===i+1?'留在原壘':destTxt(m.d)}`:'無'}
+function specials(r){
+  const sp=[],sc0=(r.mv||[]).filter(m=>m.d>=4).length+(r.bd>=4?1:0);
+  if(r.tp)sp.push('Time Play（三出局前得分計入）');
+  if(sc0>r.runs)sp.push(`三出局，${sc0-r.runs} 分不計`);
+  if(r.result==='不死三振')sp.push('不死三振，打者上壘');
+  if(r.note)sp.push(r.note);
+  return sp;
+}
+function sentence(r){
+  const a=[DESC[r.result]||r.result];
+  if(r.bd>=4&&r.result!=='全壘打')a.push('打者回本壘得分');
+  (r.mv||[]).filter(m=>m.d!==m.i+1).forEach(m=>a.push(`${BNs[m.i]}跑者${m.who&&m.who!=='?'?m.who:''}${m.d===0?'出局':m.d>=4?'回本壘得分':'上'+BNs[m.d-1]}`));
+  if(r.rbi>0)a.push(`${r.rbi}分打點`);
+  if((r.outsAdd||0)>0)a.push(`${r.outsTot}人出局`);
+  if(r.note)a.push(r.note);
+  return E(a.join('。'))+'。';
+}
+function fieldRows(r){
+  const rows=[],bt=r.bd===0?'出局':r.bd>=4?'回本壘得分':r.bd>=1?'上'+BNs[r.bd-1]:'';
+  rows.push(`打者：${E(r.batter||'')}${bt?'　→ '+bt:''}`);
+  [0,1,2].forEach(i=>rows.push(`${BNs[i]}跑者：${E(runnerTxt(r,i))}`));
+  rows.push(`打點：${r.rbi}　得分：${r.runs}`,`出局：本打席 +${r.outsAdd||0}（累計 ${r.outsTot??r.after.outs}）`);
+  const sp=specials(r);if(sp.length)rows.push(`特殊情況：${E(sp.join('；'))}`);
+  return rows.map(x=>`<div>${x}</div>`).join('');
+}
+function infoRow(r){return`<div class="info">${r.type==='run'?E(r.note||r.result):`<b>${E(r.result)}</b>　${E(r.note||'')}`}</div>`}
+function plCard(g,r,sc,full){
+  const tk=teamOf(r),ro=g[tk==='away'?'ar':'hr'],who=r.batter||'',lu=luOf(g,tk),ix=ro.findIndex(p=>lab(p)===who),pl=ix>=0?ro[ix]:null;
+  const sl=r.slot!==undefined?r.slot:(ix>=0&&ix<lu?ix+1:0),k=cnt(r.seq||''),outs=r.outsTot??r.after.outs;
+  const av0=pl?av(pl,full?52:46):av({n:(who.match(/#(\d+)/)||[])[1]||'?'},full?52:46);
+  const head=`${sl?'第'+sl+'棒':'替補'} ${E(r.pos||(pl&&pl.pos)||'')} ${E(who)}：`;
+  const bar=`<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:6px"><div style="line-height:1.1">${dots(k.s,3,'var(--acc2)')}<br>${dots(k.b,4,'var(--g)')}</div><span class="chipx" style="background:${chipClr(r.result)}">${SHORT[r.result]||E(r.result)}</span><div style="line-height:1.1">${diamond(r.after.bases,44)}<br>${dots(outs,3,'var(--acc)')}</div><b style="font-size:13px">${E(g.away)} ${sc.a} : ${sc.h} ${E(g.home)}</b></div>`;
+  const body=full
+    ?`<div class="m" style="font-size:12px;margin-top:8px">投手：${E(r.pitcher||'-')}</div>${r.seq?pitchList(r):''}`
+    :`<details style="margin-top:6px"><summary class="m" style="font-size:12px">詳細資料</summary><div class="evf">${fieldRows(r)}</div>${r.seq?`<div class="m" style="font-size:12px;margin-top:4px">投手：${E(r.pitcher||'-')}</div>${pitchList(r)}`:''}</details>`;
+  return`<div class="pe"><div>${av0}</div><div><div style="font-size:13px;line-height:1.6">${head}${sentence(r)}</div>${bar}${body}</div></div>`;
+}
+function gotoInn(n){const el=document.getElementById('in-'+n+'-top')||document.getElementById('in-'+n+'-bottom');if(el)el.scrollIntoView({behavior:'smooth',block:'start'})}
+function playByPlay(g){
+  replay(g);
+  const T={away:0,home:0},ev=g.records.map(r=>{T[teamOf(r)]+=r.runs;return{r,sc:{a:T.away,h:T.home}}});
+  if(!ev.length)return'<div class="card m">尚無紀錄</div>';
+  const mx=Math.max(...ev.map(e=>e.r.inning)),hdr=(r,id)=>`<div class="ih" ${id?`id="in-${r.inning}-${r.half}"`:''}>${r.inning} ${r.half==='top'?'上':'下'}　${E(r.half==='top'?g.away:g.home)}</div>`;
+  const build=(list,full,id)=>{let h='',last='';list.forEach(({r,sc})=>{const key=r.inning+r.half;if(key!==last){last=key;h+=hdr(r,id)}h+=r.type==='pa'?plCard(g,r,sc,full):infoRow(r)});return h};
+  const flt=({r})=>pbF==='得分'?r.runs>0:pbF==='安打'?r.hits>0:pbF==='四壞'?(r.result==='四壞'||r.result==='觸身球'):r.result==='全壘打';
+  const left=build(ev.filter(flt),true,false)||'<div class="m" style="padding:12px 0">沒有符合的紀錄</div>';
+  const nav=Array.from({length:mx},(_,i)=>`<button class="inn" onclick="gotoInn(${i+1})">${i+1}</button>`).join('');
+  return`<div class="pbp"><div><div class="row" style="justify-content:space-between;margin-top:6px"><h2 style="margin:0">得分紀錄 <span class="m" style="font-size:11px">SCORING</span></h2><select style="width:110px" onchange="pbF=this.value;render()">${['得分','安打','四壞','全壘打'].map(x=>`<option ${x===pbF?'selected':''}>${x}</option>`).join('')}</select></div>${left}</div><div><h2 style="margin:6px 0 0">各局紀錄 <span class="m" style="font-size:11px">ALL PLAYS</span></h2><div class="inn-nav">${nav}</div>${build(ev,false,true)}</div></div>`;
+}
+function sumView(){
+  const g=cg();
+  return`<div class="card">${board(g).html}</div>${STATIC?'':`<div class="row" style="margin-bottom:12px"><button class="pri" onclick="exportXlsx(cg())">匯出 Excel</button></div>`}<div class="card">${teamStats(g)}</div><div class="card">${playByPlay(g)}</div>`;
+}
+function homeView(){
+  const ann=[...db.ann].sort((a,b)=>(b.pin?1:0)-(a.pin?1:0)||b.t-a.t),gs=[...db.games].sort((a,b)=>(b.created||0)-(a.created||0)).slice(0,STATIC?999:5),cur=cg();
+  return`<div class="card" style="text-align:center;padding:24px"><div style="font-size:36px">⚾</div><div style="font-size:22px;font-weight:700">青山B 棒球隊</div><div class="m">${STATIC?'比賽紀錄展示頁':'比賽紀錄平台'}</div>${STATIC?`<div class="m" style="font-size:12px;margin-top:4px">資料更新時間：${new Date(window.__STATIC.generated).toLocaleString('zh-TW',{hour12:false})}（唯讀）</div>`:''}</div>
+  <div class="card"><h2>📢 公告欄</h2>${ann.length?ann.map(a=>`<div style="padding:10px 0;border-top:1px solid var(--bd)"><div class="row" style="justify-content:space-between"><b>${a.pin?'📌 ':''}${E(a.title)}</b><span class="m" style="font-size:12px">${new Date(a.t).toLocaleDateString('zh-TW')}${a.by?'　'+E(a.by):''}</span></div><div style="white-space:pre-line;margin-top:4px">${E(a.body)}</div></div>`).join(''):'<div class="m">目前沒有公告</div>'}</div>
+  ${STATIC?'':`<div class="card"><h2>快速開始</h2><div class="g2"><button class="pri" onclick="go('setup')">開始新比賽</button>${cur?`<button onclick="go('game')">繼續目前比賽</button>`:'<button disabled>目前沒有進行中的比賽</button>'}</div><label>加入比賽（輸入 4 位數比賽碼）</label><div class="row"><input id="jc" inputmode="numeric" maxlength="4" placeholder="比賽碼" style="flex:1" onkeydown="if(event.key==='Enter')joinCode()"><button class="pri" onclick="joinCode()">加入</button></div></div>`}
+  <div class="card"><h2>最近比賽</h2>${gs.map(g=>{const T=scrT(g);return`<div class="row" style="justify-content:space-between;padding:8px 0;border-top:1px solid var(--bd)"><div><b>${E(g.away)} ${T.away.r} : ${T.home.r} ${E(g.home)}</b><div class="m" style="font-size:12px">${g.status==='final'?'已結束':'進行中'}${g.code&&!STATIC?'　比賽碼 '+g.code:''}　${new Date(g.created).toLocaleDateString('zh-TW')}</div></div><button onclick="openGame('${g.id}')">查看</button></div>`}).join('')||'<div class="m">還沒有比賽紀錄</div>'}</div>`;
+}
+const scrT=g=>{if(g.records&&g.records.length)return board(g).T;const x=g.sc||{a:0,h:0};return{away:{r:x.a,h:0,e:0},home:{r:x.h,h:0,e:0}}};
+function openAdminGame(id){adminSel=id;const g=db.games.find(x=>x.id===id);if(g&&g.code)attach(g);render()}
+function openGame(id){db.cur=id;save();const g=cg();if(g&&g.code)attach(g);go('sum')}
+/* ---------- 後台 ---------- */
+function gamesAdmin(){
+  const gs=[...db.games].sort((a,b)=>(b.created||0)-(a.created||0)),recs=db.games.reduce((a,g)=>a+g.records.length,0),runs=db.games.reduce((a,g)=>a+scrT(g).away.r+scrT(g).home.r,0);
+  const sel=db.games.find(g=>g.id===adminSel);
+  return`<div class="g4" style="margin-bottom:12px">${[['比賽場次',db.games.length],['總紀錄',recs],['總打席',db.games.reduce((a,g)=>a+g.records.filter(r=>r.type==='pa').length,0)],['總得分',runs]].map(([l,v])=>`<div class="card" style="margin:0;text-align:center"><div style="font-size:22px;font-weight:700;color:var(--acc2)">${v}</div><div class="m" style="font-size:12px">${l}</div></div>`).join('')}</div>
+  <div class="card"><div class="row" style="justify-content:space-between;margin-bottom:8px"><h2 style="margin:0">比賽列表</h2>${isAdmin()?`<div class="row"><button onclick="exportAll()">備份全部</button><button onclick="$('imp').click()">匯入備份檔</button><button onclick="pasteImport()">貼上匯入</button><input id="imp" type="file" accept=".json" style="display:none" onchange="importAll(this)"></div>`:''}</div>
+  <div class="tw"><table><thead><tr><th>客隊</th><th>比分</th><th>主隊</th><th>狀態</th><th>紀錄</th><th>建立時間</th></tr></thead><tbody>${gs.map(g=>{const T=scrT(g);return`<tr style="cursor:pointer" onclick="openAdminGame('${g.id}')"><td>${E(g.away)}</td><td><b>${T.away.r} : ${T.home.r}</b></td><td>${E(g.home)}</td><td>${g.status==='final'?'已結束':'進行中'}</td><td>${g.records.length}</td><td>${new Date(g.created).toLocaleString('zh-TW',{hour12:false})}</td></tr>`}).join('')||'<tr><td colspan="6" class="m">尚無比賽</td></tr>'}</tbody></table></div></div>
+  ${sel?`<div class="card"><div class="row" style="justify-content:space-between;margin-bottom:8px"><h2 style="margin:0">${E(sel.away)} vs ${E(sel.home)}</h2><div class="row">${isAdmin()&&sel.status==='live'?`<button onclick="db.cur='${sel.id}';selIdx=null;save();go('game')">繼續記錄</button>`:''}<button onclick="exportXlsx(db.games.find(g=>g.id===adminSel))">匯出 Excel</button>${isAdmin()?`<button class="danger" onclick="delGame()">刪除比賽</button>`:''}<button onclick="adminSel=null;render()">關閉</button></div></div>${board(sel).html}${teamStats(sel)}<h2 style="margin-top:14px">逐筆紀錄${isAdmin()?'（刪除後自動重新計算比分與壘包）':''}</h2>${logTable(sel,isAdmin())}</div>`:''}`;
+}
+let adminTab='games',pend='';
+function adminView(){
+  if(!role)return'<div class="card">請先登入後台。</div>';
+  const tabs=isAdmin()?[['games','比賽管理'],['players','球員管理'],['ann','公告管理'],['users','使用者管理']]:[['games','比賽管理'],['ann','公告管理']];
+  if(!tabs.some(t=>t[0]===adminTab))adminTab='games';
+  const body={games:gamesAdmin,players:playersAdmin,ann:annAdmin,users:usersAdmin}[adminTab]();
+  return`<div class="card row" style="justify-content:space-between"><span>目前身分：<b>${isAdmin()?'後台管理員':'後台使用者（'+E(roleName)+'）'}</b></span><span class="row">${isAdmin()?`<button class="pri" id="upbtn" onclick="uploadAll()">⬆️ 上傳伺服器</button><button onclick="publicDlg()">🌐 匯出展示頁</button>`:''}<button onclick="adminLogout()">登出後台</button></span></div>
+  <div class="m" style="font-size:12px;margin:-4px 2px 10px">伺服器狀態：${SY?(canAdm?'已連線，可寫入':canW?'已連線，只能寫入部分資料（缺管理權限）':'已連線，唯讀'):'未連線（資料只存在這個瀏覽器）'}${db.lastUpload?'　上次上傳：'+new Date(db.lastUpload).toLocaleString('zh-TW',{hour12:false}):''}</div>
+  <div class="row" style="margin-bottom:12px">${tabs.map(([k,l])=>`<button class="${adminTab===k?'pri':''}" onclick="adminTab='${k}';render()">${l}</button>`).join('')}</div>`+body;
+}
+function playersAdmin(){
+  return`<div class="card"><div class="row" style="justify-content:space-between;margin-bottom:8px"><h2 style="margin:0">青山B 球員管理（${db.players.length} 人）</h2><button class="pri" onclick="playerForm('')">＋ 新增球員</button></div><div class="tw"><table><thead><tr><th>大頭貼</th><th>背號</th><th>姓名</th><th></th></tr></thead><tbody>${db.players.map(p=>`<tr><td>${av({pid:p.id,n:p.n},40)}</td><td>${E(p.n)}</td><td>${E(p.name)}</td><td><button onclick="playerForm('${p.id}')">編輯</button> <button class="danger" onclick="delPlayer('${p.id}')">刪除</button></td></tr>`).join('')||'<tr><td colspan="4" class="m">尚無球員</td></tr>'}</tbody></table></div><p class="m" style="font-size:12px">這份名單就是比賽設定時「主隊」下拉選單的球員來源，大頭貼會顯示在記錄頁的打者與投手對戰區和目前陣容。</p></div>`;
+}
+function annAdmin(){
+  const e=db.ann.find(x=>x.id===annEdit)||{title:'',body:'',pin:false},list=[...db.ann].sort((a,b)=>(b.pin?1:0)-(a.pin?1:0)||b.t-a.t);
+  return`<div class="card"><h2>${annEdit?'編輯公告':'新增公告'}</h2><label>標題</label><input id="at" value="${E(e.title)}"><label>內容</label><textarea id="ab" style="min-height:110px">${E(e.body)}</textarea>${isAdmin()?`<label style="display:flex;gap:8px;align-items:center;color:var(--t)"><input id="ap" type="checkbox" style="width:auto" ${e.pin?'checked':''}>置頂</label>`:''}<div class="row" style="margin-top:10px"><button class="pri" onclick="saveAnn()">${annEdit?'儲存修改':'發布公告'}</button>${annEdit?`<button onclick="annEdit='';render()">取消編輯</button>`:''}</div>${SY?'':'<p class="m" style="font-size:12px">目前無法連線共用資料庫，公告只會存在這個瀏覽器。</p>'}</div>
+  <div class="card"><h2>已發布公告（${list.length}）</h2>${list.map(a=>`<div class="row" style="justify-content:space-between;padding:8px 0;border-top:1px solid var(--bd)"><div style="min-width:0"><b>${a.pin?'📌 ':''}${E(a.title)}</b><div class="m" style="font-size:12px">${new Date(a.t).toLocaleDateString('zh-TW')}</div></div>${isAdmin()?`<div class="row"><button onclick="annEdit='${a.id}';render();window.scrollTo(0,0)">編輯</button><button class="danger" onclick="delAnn('${a.id}')">刪除</button></div>`:''}</div>`).join('')||'<div class="m">尚無公告</div>'}</div>`;
+}
+function saveAnn(){
+  if(!role){toast('請先登入後台');return}
+  if(annEdit&&needAdmin())return;
+  const t=$('at').value.trim(),b=$('ab').value.trim();if(!t){toast('請輸入標題');return}
+  const id=annEdit||uid(),old=db.ann.find(x=>x.id===id),a={id,title:t,body:b,pin:isAdmin()&&($('ap')?$('ap').checked:false),t:old?old.t:Date.now(),by:roleName||'',local:!(SY&&canW)};
+  db.ann=db.ann.filter(x=>x.id!==id).concat(a);save();
+  if(SY)wr(()=>SY.collection('announcements').doc(id).set(clone(a)));
+  annEdit='';render();toast(SY&&canW?'公告已發布':'公告只存在這個瀏覽器：目前沒有共用資料庫的寫入權限');
+}
+function delAnn(id){if(needAdmin())return;modal(`<h2>刪除這則公告？</h2><div class="row"><button class="pri" onclick="doDelAnn('${id}')">刪除</button><button onclick="modal('')">取消</button></div>`)}
+function doDelAnn(id){if(needAdmin())return;db.ann=db.ann.filter(x=>x.id!==id);save();if(SY)wr(()=>SY.collection('announcements').doc(id).delete());modal('');render();toast('公告已刪除')}
+const pv=n=>pend?`<img class="av" style="width:96px;height:96px" src="${pend}" alt="">`:`<span class="av" style="width:96px;height:96px;font-size:30px">${E(n||'?')}</span>`;
+function playerForm(id){if(needAdmin())return;
+  const p=db.players.find(x=>x.id===id)||{n:'',name:'',photo:''};pend=p.photo||'';
+  modal(`<h2>${id?'編輯':'新增'}球員</h2><div style="text-align:center" id="pvw">${pv(p.n)}</div><label>大頭貼（自動裁成正方形並縮小）</label><input type="file" accept="image/*" onchange="pickPhoto(this)"><button style="margin-top:6px" onclick="pend='';$('pvw').innerHTML=pv($('pn2').value)">移除照片</button><div class="g2"><div><label>背號</label><input id="pn2" inputmode="numeric" maxlength="3" value="${E(p.n)}"></div><div><label>姓名</label><input id="pm2" value="${E(p.name)}"></div></div><div class="row" style="margin-top:12px"><button class="pri" onclick="savePlayer('${id}')">儲存</button><button onclick="modal('')">取消</button></div>`);
+}
+function pickPhoto(inp){
+  const f=inp.files[0];if(!f)return;const r=new FileReader();
+  r.onload=()=>{const im=new Image();im.onload=()=>{const S=160,c=document.createElement('canvas');c.width=c.height=S;const m=Math.min(im.width,im.height);c.getContext('2d').drawImage(im,(im.width-m)/2,(im.height-m)/2,m,m,0,0,S,S);pend=c.toDataURL('image/jpeg',.82);$('pvw').innerHTML=pv($('pn2').value)};im.onerror=()=>toast('無法讀取這張圖片');im.src=r.result};
+  r.readAsDataURL(f);
+}
+function savePlayer(id){if(needAdmin())return;
+  const n=$('pn2').value.trim(),name=$('pm2').value.trim();
+  if(!name){toast('請輸入姓名');return}
+  const p=db.players.find(x=>x.id===id);
+  if(p){p.n=n;p.name=name;p.photo=pend}else db.players.push({id:uid(),n,name,photo:pend,ord:Date.now()});
+  const q=p||db.players[db.players.length-1];save();
+  if(SY&&canAdm)wr(()=>SY.collection('players').doc(q.id).set(clone(q)));
+  modal('');render();toast(SY&&canAdm?'球員已儲存並同步到伺服器':'球員已儲存（只存在這個瀏覽器：沒有共用資料庫的管理權限）');
+}
+function delPlayer(id){if(needAdmin())return;const p=db.players.find(x=>x.id===id);modal(`<h2>刪除球員？</h2><p>${E(p?p.name:'')}　已進行中的比賽不受影響。</p><div class="row"><button class="pri" onclick="doDelPlayer('${id}')">刪除</button><button onclick="modal('')">取消</button></div>`)}
+function doDelPlayer(id){if(needAdmin())return;db.players=db.players.filter(x=>x.id!==id);save();if(SY&&canAdm)wr(()=>SY.collection('players').doc(id).delete());modal('');render();toast('球員已刪除')}
+function delRec(id){if(needAdmin())return;const g=db.games.find(x=>x.id===adminSel);modal(`<h2>刪除這筆紀錄？</h2><div class="row"><button class="pri" onclick="doDelRec('${id}')">刪除</button><button onclick="modal('')">取消</button></div>`)}
+function doDelRec(id){if(needAdmin())return;const g=db.games.find(x=>x.id===adminSel);g.records=g.records.filter(r=>r.id!==id);replay(g);save();syncDel(g,id);syncScore(g);modal('');render();toast('已刪除並重新計算')}
+function delGame(){if(needAdmin())return;modal(`<h2>刪除整場比賽？</h2><p>此動作無法復原。</p><div class="row"><button class="pri" onclick="doDelGame()">刪除</button><button onclick="modal('')">取消</button></div>`)}
+function doDelGame(){if(needAdmin())return;const dg=db.games.find(g=>g.id===adminSel);if(dg){if(dg.code)detach(dg.code);purgeRemote(dg)}db.games=db.games.filter(g=>g.id!==adminSel);if(db.cur===adminSel)db.cur=null;adminSel=null;save();modal('');render();toast('已刪除')}
+function exportAll(){if(needAdmin())return;dl('qinghan-baseball-backup.json',JSON.stringify(db),'application/json')}
+function importData(txt){if(needAdmin())return;try{const d=JSON.parse(txt);if(!Array.isArray(d.games))throw 0;const ids=new Set(db.games.map(g=>g.id));d.games.forEach(g=>{if(!ids.has(g.id))db.games.push(g)});(d.players||[]).forEach(p=>{if(!db.players.some(x=>x.id===p.id))db.players.push(p)});save();if(SY&&canAdm)(d.players||[]).forEach(p=>wr(()=>SY.collection('players').doc(p.id).set(clone(p))));modal('');render();toast('匯入完成')}catch(e){toast('資料格式錯誤')}}
+function importAll(inp){if(needAdmin())return;const f=inp.files[0];if(!f)return;const r=new FileReader();r.onload=()=>importData(r.result);r.readAsText(f)}
+function pasteImport(){if(needAdmin())return;modal(`<h2>貼上備份資料</h2><textarea id="pt" style="min-height:160px;font-size:11px" placeholder="貼上備份 JSON 內容"></textarea><div class="row" style="margin-top:10px"><button class="pri" onclick="importData($('pt').value)">匯入</button><button onclick="modal('')">取消</button></div>`)}
+/* ---------- Supabase 版：登入、公告、使用者、下載、上傳（覆蓋前面的同名函式）---------- */
+let staffLoaded=false;
+async function doLogin(){
+  const nm=$('lu').value.trim(),pw=$('pw').value;if(!pw){toast('請輸入密碼');return}
+  try{
+    const r=await qbRpc('qb_login',{p_username:nm,p_password:pw});
+    token=r.token;role=r.role;roleName=r.role==='admin'?'後台管理員':r.username;canAdm=role==='admin';
+    modal('');adminTab='games';adminSel=null;annEdit='';staffLoaded=false;go('admin');toast('登入成功：'+roleName);
+  }catch(e){toast(/invalid/.test(e.message||'')?'帳號或密碼錯誤':'登入失敗：'+(e.message||e))}
+}
+async function adminLogout(){try{if(token)await qbRpc('qb_logout',{p_token:token})}catch(e){}token=null;role=null;roleName='';canAdm=false;staffLoaded=false;adminSel=null;annEdit='';go('home')}
+async function refreshAnn(){try{const d=await SY.collection('announcements').get();db.ann=d.docs.map(x=>clone(x.data()));save()}catch(e){}}
+async function saveAnn(){
+  if(!role){toast('請先登入後台');return}
+  if(annEdit&&needAdmin())return;
+  const t=$('at').value.trim(),b=$('ab').value.trim();if(!t){toast('請輸入標題');return}
+  const pin=isAdmin()&&($('ap')?$('ap').checked:false);
+  try{
+    if(annEdit)await qbRpc('qb_update_announcement',{p_token:token,a:{id:annEdit,title:t,body:b,pin}});
+    else await qbRpc('qb_post_announcement',{p_token:token,a:{title:t,body:b,pin}});
+    annEdit='';await refreshAnn();render();toast('公告已發布，所有人都看得到');
+  }catch(e){authFail(e)}
+}
+async function doDelAnn(id){
+  if(needAdmin())return;
+  try{await qbRpc('qb_delete_announcement',{p_token:token,p_id:id});await refreshAnn();modal('');render();toast('公告已刪除')}catch(e){modal('');authFail(e)}
+}
+async function refreshStaff(){
+  try{const rows=await qbRpc('qb_list_staff',{p_token:token});db.users=rows.map(u=>({id:u.id,name:u.username,role:u.role,created:u.created}));staffLoaded=true;softRender()}catch(e){authFail(e)}
+}
+async function addUser(){
+  if(needAdmin())return;
+  const nm=$('un').value.trim(),pw=$('up').value;
+  if(!nm){toast('請輸入帳號');return}
+  if(pw.length<6){toast('密碼至少 6 個字元');return}
+  try{await qbRpc('qb_add_staff',{p_token:token,p_username:nm,p_password:pw});await refreshStaff();render();toast('已新增後台使用者')}
+  catch(e){if(/exists/.test(e.message||''))toast('此帳號已存在');else authFail(e)}
+}
+function delUser(id){if(needAdmin())return;const u=db.users.find(x=>x.id===id);modal(`<h2>刪除使用者？</h2><p>${E(u?u.name:'')}</p><div class="row"><button class="pri" onclick="doDelUser('${id}')">刪除</button><button onclick="modal('')">取消</button></div>`)}
+async function doDelUser(id){if(needAdmin())return;try{await qbRpc('qb_delete_staff',{p_token:token,p_id:id});await refreshStaff();modal('');render();toast('已刪除')}catch(e){modal('');authFail(e)}}
+function usersAdmin(){
+  if(!staffLoaded){staffLoaded=true;refreshStaff()}
+  return`<div class="card"><h2>新增後台使用者</h2><div class="g2"><div><label>帳號</label><input id="un" autocomplete="off"></div><div><label>密碼（至少 6 字元）</label><input id="up" type="password" autocomplete="new-password"></div></div><button class="pri" style="margin-top:10px" onclick="addUser()">新增使用者</button><p class="m" style="font-size:12px">後台使用者只能「發布公告」與「查看比賽紀錄、匯出 Excel」。刪除、修改與管理等權限由伺服器端把關，不是只靠畫面隱藏。</p></div>
+  <div class="card"><h2>後台帳號（${db.users.length}）</h2>${db.users.map(u=>`<div class="row" style="justify-content:space-between;padding:8px 0;border-top:1px solid var(--bd)"><div><b>${E(u.name)}</b>${u.role==='admin'?' <span class="chip">管理員</span>':''}<div class="m" style="font-size:12px">${new Date(u.created).toLocaleDateString('zh-TW')}</div></div>${u.role==='admin'?'':`<button class="danger" onclick="delUser('${u.id}')">刪除</button>`}</div>`).join('')||'<div class="m">載入中…</div>'}</div>`;
+}
+async function purgeRemote(g){if(!SY||!g.code||role!=='admin')return;try{await GD(g.code).delete()}catch(e){}}
+function saveBlob(name,blob){const u=URL.createObjectURL(blob);const a=document.createElement('a');a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),2000);toast('已下載 '+name)}
+async function dl(name,text){saveBlob(name,new Blob([text],{type:name.endsWith('.html')?'text/html':name.endsWith('.csv')?'text/csv':'application/json'}))}
+async function dlBin(name,buf){saveBlob(name,new Blob([buf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}))}
+async function uploadAll(){
+  if(needAdmin())return;
+  if(uploading)return;
+  if(!SY){toast('尚未連上伺服器');return}
+  uploading=true;const btn=$('upbtn');if(btn){btn.disabled=true;btn.textContent='上傳中…'}
+  const R=[];
+  try{
+    const players=db.players.map((p,i)=>({id:p.id,n:p.n,name:p.name,photo:p.photo||'',ord:p.ord??i}));
+    const announcements=db.ann.map(a=>({id:a.id,title:a.title,body:a.body,pin:!!a.pin,author:a.by||'',t:a.t}));
+    const r=await qbRpc('qb_import_all',{p_token:token,p:{players,announcements}});
+    R.push(`球員 ${r.players} 筆、公告 ${r.announcements} 筆 ✔`);
+    const gs=db.games.filter(g=>!(g.sync&&!g.records.length));let gok=0,rok=0,rall=0,gf=0;
+    for(const g of gs){try{const x=await uploadGame(g);gok++;rok+=x.ok;rall+=x.total}catch(e){gf++}}
+    R.push(`比賽：${gok}／${gs.length} 場，紀錄 ${rok}／${rall} 筆${gf||rok<rall?' ⚠️ 有失敗':' ✔'}`);
+    db.lastUpload=Date.now();save();
+  }catch(e){if(/unauthorized/.test(e.message||'')){uploading=false;authFail(e);return}R.push('發生錯誤：'+(e&&e.message||'未知'))}
+  uploading=false;
+  modal(`<h2>⬆️ 上傳結果</h2><div style="line-height:1.9">${R.map(E).join('<br>')}</div><div class="m" style="font-size:12px;margin-top:8px">已存在的資料會被這台裝置的版本覆蓋。</div><button class="pri" style="width:100%;margin-top:10px" onclick="modal('')">確定</button>`);
+  render();
+}
+
+render();
+</script></body></html>
