@@ -83,6 +83,7 @@ const STATIC=!!window.__STATIC; // 匯出的「展示頁」：唯讀，不需登
 let db=STATIC?{games:[],cur:null,...JSON.parse(JSON.stringify(window.__STATIC)),users:[]}:{games:[],cur:null};
 if(!STATIC){try{const v=localStorage.getItem('qb2');if(v)db=JSON.parse(v)}catch(e){}}
 else{const l=[...db.games].sort((a,b)=>(b.created||0)-(a.created||0))[0];db.cur=l?l.id:null}
+db.games.forEach(g=>{g.pend=0;g.pendIds={};g.delIds={}});
 function save(){if(STATIC)return;try{localStorage.setItem('qb2',JSON.stringify(db))}catch(e){}}
 let annEdit='',pbF='得分',noteIn='',SY=null,canW=true,canAdm=true,unsubs=[],rt=null;
 let tab='home',adminOK=false,adminSel=null,selIdx=null,rbiIn='',runIn='';
@@ -436,12 +437,20 @@ const readyP=(async()=>{
   const g=cg();if(SY){subAnn();subPlayers();subGames()}if(SY&&g&&g.code)attach(g);render()})();
 const GD=c=>SY.doc('games/'+c),RC=c=>SY.collection('games/'+c+'/records');
 const clone=o=>JSON.parse(JSON.stringify(o));
-const metaOf=g=>clone({away:g.away,home:g.home,ar:g.ar,hr:g.hr,lu:g.lu,pit:g.pit,status:g.status,side:g.side,seq:g.seq||'',stash:g.stash||[],created:g.created,sc:g.sc||{a:0,h:0},upd:g.upd||0});
+const metaOf=g=>clone({away:g.away,home:g.home,ar:g.ar,hr:g.hr,lu:g.lu,pit:g.pit,status:g.status,side:g.side,seq:encSeq(g),stash:g.stash||[],created:g.created,sc:g.sc||{a:0,h:0},upd:g.upd||0});
 function roOK(g){if(g&&g.code&&SY&&!canW){toast('你目前只有檢視權限，無法編輯（請向擁有者索取「可編輯」權限）');return false}return true}
 async function wr(fn){if(!SY||!canW)return;try{await fn()}catch(e){toast('同步失敗：'+(e&&e.code==='invalid_argument'?'沒有編輯權限':'請檢查網路'))}}
-function syncMeta(g,patch){if(g&&g.code)wr(()=>GD(g.code).update(clone(patch)))}
-function syncRec(g,r){if(g.code)wr(()=>RC(g.code).doc(r.id).set(clone(r)))}
-function syncDel(g,id){if(g.code)wr(()=>RC(g.code).doc(id).delete())}
+const mq={};
+function paCount(g){return g.records.filter(r=>r.type==='pa').length}
+function encSeq(g){return paCount(g)+'|'+(g.seq||'')} // 球數序列附上「第幾個打席」，避免舊資料蓋到下一位打者
+function decSeq(v){const m=/^(\d+)\|(.*)$/.exec(v||'');return m?{n:+m[1],seq:m[2]}:{n:-1,seq:''}}
+function syncMeta(g,patch){ // 依序寫入，避免快速連點時後送的請求先到、被舊值蓋掉
+  if(!g||!g.code)return;
+  const code=g.code,body=clone(patch);g.pend=(g.pend||0)+1;
+  mq[code]=(mq[code]||Promise.resolve()).then(()=>wr(()=>GD(code).update(body))).catch(()=>{}).then(()=>{g.pend=Math.max(0,(g.pend||1)-1)});
+}
+function syncRec(g,r){if(g.code){(g.pendIds=g.pendIds||{})[r.id]=Date.now();wr(()=>RC(g.code).doc(r.id).set(clone(r)))}}
+function syncDel(g,id){if(g.code){(g.delIds=g.delIds||{})[id]=Date.now();wr(()=>RC(g.code).doc(id).delete())}}
 function syncScore(g){if(!g||!g.code)return;const T=board(g).T,x=st(g);g.sc={a:T.away.r,h:T.home.r,inn:x.inning,half:x.half};g.upd=Date.now();syncMeta(g,{sc:g.sc,upd:g.upd})}
 function syncPit(){const g=cg();syncMeta(g,{pit:g.pit})}
 let annSeeded=true;
@@ -456,7 +465,7 @@ function subGames(){
     const seen=new Set();
     q.docs.forEach(d=>{
       const m=clone(d.data()),code=d.id;seen.add(code);let g=db.games.find(x=>x.code===code);
-      if(!g){g={...m,id:uid(),code,records:[],seq:m.seq||'',stash:m.stash||[],sync:true};db.games.push(g)}
+      if(!g){g={...m,id:uid(),code,records:[],seq:'',_rseq:decSeq(m.seq),stash:m.stash||[],sync:true};db.games.push(g)}
       else if(!unsubMap[code])Object.assign(g,{away:m.away,home:m.home,ar:m.ar,hr:m.hr,lu:m.lu,pit:m.pit,status:m.status,side:m.side,sc:m.sc,upd:m.upd,sync:true});
       else{g.sc=m.sc;g.upd=m.upd;g.sync=true}
     });
@@ -574,8 +583,21 @@ function attach(g){
   if(!SY||!g||!g.code||unsubMap[g.code])return;
   const keys=Object.keys(unsubMap);if(keys.length>=20){const cc=attachedCode();const old=keys.find(k=>k!==cc);if(old)detach(old)}
   const arr=unsubMap[g.code]=[];
-  arr.push(GD(g.code).onSnapshot(sn=>{if(!sn.exists)return;const m=clone(sn.data());Object.assign(g,{away:m.away,home:m.home,ar:m.ar,hr:m.hr,lu:m.lu,pit:m.pit,status:m.status,side:m.side,seq:m.seq||'',stash:m.stash||[],sc:m.sc,upd:m.upd,sync:true});save();softRender()},()=>{}));
-  arr.push(RC(g.code).onSnapshot(q=>{g.records=q.docs.map(d=>clone(d.data())).sort((a,b)=>(a.t-b.t)||(a.id<b.id?-1:1));replay(g);save();softRender()},()=>{}));
+  arr.push(GD(g.code).onSnapshot(sn=>{if(!sn.exists)return;const m=clone(sn.data()),d=decSeq(m.seq);g._rseq=d;g.sync=true;if(!g.pend){Object.assign(g,{away:m.away,home:m.home,ar:m.ar,hr:m.hr,lu:m.lu,pit:m.pit,status:m.status,side:m.side,sc:m.sc,upd:m.upd});g.stash=m.stash||[];if(d.n===paCount(g))g.seq=d.seq}save();softRender()},()=>{}));
+  arr.push(RC(g.code).onSnapshot(q=>{
+    const rem=q.docs.map(d=>clone(d.data())),ids=new Set(rem.map(r=>r.id)),now=Date.now();
+    g.pendIds=g.pendIds||{};g.delIds=g.delIds||{};
+    Object.keys(g.pendIds).forEach(id=>{if(ids.has(id)||now-g.pendIds[id]>60000)delete g.pendIds[id]});
+    Object.keys(g.delIds).forEach(id=>{if(!ids.has(id)||now-g.delIds[id]>60000)delete g.delIds[id]});
+    const keep=g.records.filter(r=>g.pendIds[r.id]&&!ids.has(r.id)); // 剛寫入、伺服器還沒回報的紀錄先保留，避免被舊清單蓋掉
+    g.records=rem.filter(r=>!g.delIds[r.id]).concat(keep).sort((a,b)=>(a.t-b.t)||(a.id<b.id?-1:1));
+    replay(g);
+    const n=paCount(g);
+    if(g.seqN!==undefined&&g.seqN!==n&&!g.pend)g.seq=''; // 別台裝置記錄了新打席：目前這一球的累計作廢
+    g.seqN=n;
+    if(!g.pend&&g._rseq&&g._rseq.n===n)g.seq=g._rseq.seq;
+    save();softRender();
+  },()=>{}));
 }
 async function shareGame(g){
   if(!SY){toast('尚未連上伺服器，請稍後再試');return}
@@ -598,7 +620,7 @@ async function joinCode(){
   try{
     const x=await GD(code).get();if(!x.exists){toast('找不到此比賽碼');return}
     let g=db.games.find(y=>y.code===code);
-    if(!g){const m=clone(x.data());g={...m,id:uid(),code,records:[],seq:m.seq||''};db.games.push(g)}
+    if(!g){const m=clone(x.data());g={...m,id:uid(),code,records:[],seq:'',_rseq:decSeq(m.seq)};db.games.push(g)}
     db.cur=g.id;save();attach(g);tab='game';render();toast('已加入比賽 '+code+(canW?'':'（僅檢視）'));
   }catch(e){toast('加入失敗，請確認已登入並有權限')}
 }
@@ -610,9 +632,9 @@ function ok(g){
   const ro=g[bat==='away'?'ar':'hr'],lu=g.lu?g.lu[bat]:Math.min(9,ro.length),pa=g.records.filter(r=>r.type==='pa'&&teamOf(r)===bat).length,ix=selIdx??(pa%lu),p=ro[ix];
   return{s,batter:((p.n?'#'+p.n+' ':'')+p.name).trim(),pitcher:g.pit[fld],slot:ix<lu?ix+1:0,pos:p.pos||''};
 }
-function pitch(c){const g=cg(),o=ok(g);if(!o)return;g.seq+=c;const k=cnt(g.seq);save();syncMeta(g,{seq:g.seq});if(k.s>=3){submit('三振');return}if(k.b>=4){submit('四壞');return}render()}
-function undoPitch(){const g=cg();if(!roOK(g))return;g.seq=g.seq.slice(0,-1);save();syncMeta(g,{seq:g.seq});render()}
-function push(g,r){const s=st(g);r.id=uid();r.t=Date.now();r.inning=s.inning;r.half=s.half;apply(s,r);g.records.push(r);if(r.type==='pa'){if(!Array.isArray(g.stash))g.stash=[];g.seq=g.stash.pop()||'';selIdx=null;rbiIn='';runIn='';noteIn=''}save();syncRec(g,r);if(r.type==='pa')syncMeta(g,{seq:g.seq,stash:g.stash});if(r.type==='sub'||r.type==='pos')syncMeta(g,{ar:g.ar,hr:g.hr,pit:g.pit});syncScore(g)}
+function pitch(c){const g=cg(),o=ok(g);if(!o)return;{const z=cnt(g.seq);if(z.s>=3||z.b>=4)g.seq=''}g.seqN=paCount(g);g.seq+=c;const k=cnt(g.seq);save();syncMeta(g,{seq:encSeq(g)});if(k.s>=3){submit('三振');return}if(k.b>=4){submit('四壞');return}render()}
+function undoPitch(){const g=cg();if(!roOK(g))return;g.seq=g.seq.slice(0,-1);save();syncMeta(g,{seq:encSeq(g)});render()}
+function push(g,r){const s=st(g);r.id=uid();r.t=Date.now();r.inning=s.inning;r.half=s.half;apply(s,r);g.records.push(r);if(r.type==='pa'){if(!Array.isArray(g.stash))g.stash=[];g.seq=g.stash.pop()||'';g.seqN=paCount(g);selIdx=null;rbiIn='';runIn='';noteIn=''}save();syncRec(g,r);if(r.type==='pa')syncMeta(g,{seq:encSeq(g),stash:g.stash});if(r.type==='sub'||r.type==='pos')syncMeta(g,{ar:g.ar,hr:g.hr,pit:g.pit});syncScore(g)}
 function submit(result){
   const g=cg(),o=ok(g);if(!o)return;
   const s=o.s;let seq=g.seq,note='';
@@ -673,7 +695,7 @@ function doSteal(action){
   push(g,{type:'run',result:action,base:bi,runner:who,batter:who,pitcher:g.pit[s.half==='top'?'home':'away']||'',seq:'',note});
   modal('');render();toast(`${who||'跑者'} ${action}`);
 }
-function undoLast(){const g=cg();if(!g.records.length){toast('沒有可復原的紀錄');return}if(!roOK(g))return;const x=g.records.pop();if(x.snap){g.ar=x.snap.ar;g.hr=x.snap.hr;g.pit=x.snap.pit;syncMeta(g,{ar:g.ar,hr:g.hr,pit:g.pit})}else if(x.type==='pa'){if(!Array.isArray(g.stash))g.stash=[];if(g.seq)g.stash.push(g.seq);g.seq=(['三振','四壞'].includes(x.result)&&/[SB]$/.test(x.seq||'')?x.seq.slice(0,-1):(x.seq||''));syncMeta(g,{seq:g.seq,stash:g.stash})}syncDel(g,x.id);syncScore(g);save();render();toast('已復原')}
+function undoLast(){const g=cg();if(!g.records.length){toast('沒有可復原的紀錄');return}if(!roOK(g))return;const x=g.records.pop();if(x.snap){g.ar=x.snap.ar;g.hr=x.snap.hr;g.pit=x.snap.pit;syncMeta(g,{ar:g.ar,hr:g.hr,pit:g.pit})}else if(x.type==='pa'){if(!Array.isArray(g.stash))g.stash=[];if(g.seq)g.stash.push(g.seq);g.seq=(['三振','四壞'].includes(x.result)&&/[SB]$/.test(x.seq||'')?x.seq.slice(0,-1):(x.seq||''));syncMeta(g,{seq:encSeq(g),stash:g.stash})}syncDel(g,x.id);syncScore(g);save();render();toast('已復原')}
 function endGame(){modal(`<h2>結束比賽？</h2><p>結束後將無法繼續記錄這場比賽。</p><div class="row"><button class="pri" onclick="const g=cg();if(roOK(g)){g.status='final';save();syncMeta(g,{status:'final'})}modal('');render()">確定結束</button><button onclick="modal('')">取消</button></div>`)}
 const BNs=['一壘','二壘','三壘'];
 const diamond=(b,z)=>{const q=(x,y,i)=>`<rect x="${x}" y="${y}" width="12" height="12" transform="rotate(45 ${x+6} ${y+6})" fill="${b[i]==='1'?'var(--acc2)':'none'}" stroke="var(--m)" stroke-width="2"/>`;return`<svg width="${z}" height="${Math.round(z*.78)}" viewBox="0 0 72 56">${q(30,4,1)}${q(54,24,0)}${q(6,24,2)}</svg>`};
@@ -682,8 +704,8 @@ const destTxt=d=>d===0?'出局':d>=4?'回本壘得分':'進到'+['','一壘','�
 function pitchList(r){
   let b=0,s=0;const rows=[];
   [...(r.seq||'')].forEach((c,k)=>{if(c==='B')b++;else if(c==='S')s++;else if(c==='F'&&s<2)s++;
-    rows.push(`<div class="pl"><span class="pn" style="background:${c==='B'?'var(--g)':'var(--acc2)'}">${k+1}</span><span>${c==='B'?'壞球':c==='S'?'好球':'界外球'}</span><b>${b}-${s}</b></div>`)});
-  rows.push(`<div class="pl"><span class="pn" style="background:var(--acc2)">${rows.length+1}</span><span>${E(r.result)}</span><b>${b}-${s}</b></div>`);
+    rows.push(`<div class="pl"><span class="pn" style="background:${c==='B'?'var(--g)':'var(--acc2)'}">${k+1}</span><span>${c==='B'?'壞球':c==='S'?'好球':'界外球'}</span><b>${Math.min(b,4)}-${Math.min(s,3)}</b></div>`)});
+  rows.push(`<div class="pl"><span class="pn" style="background:var(--acc2)">${rows.length+1}</span><span>${E(r.result)}</span><b>${Math.min(b,4)}-${Math.min(s,3)}</b></div>`);
   return rows.join('');
 }
 const SHORT={'一安':'一安','二安':'二安','三安':'三安','全壘打':'全打','飛球出局':'飛球','滾地出局':'滾地','三振':'三振','不死三振':'不死三','四壞':'四壞','犧牲打':'犧打','雙殺':'雙殺','失誤':'失誤','野選':'野選','觸身球':'觸身','其他':'其他'};
