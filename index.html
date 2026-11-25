@@ -150,9 +150,20 @@ const cnt=q=>{let b=0,s=0;for(const c of q){if(c==='B')b++;if(c==='S')s++;if(c==
 const teamOf=r=>r.half==='top'?'away':'home';
 
 /* ---------- 計分板與統計 ---------- */
+let LMC=null;
+// 以「球員身分」判斷隊伍：看打者／投手出現在哪一隊的名單（含換人前的名單），比用半局推算可靠
+function labelMap(g){
+  const m={},add=(arr,t)=>(arr||[]).forEach(p=>{const l=lab(p);m[l]=(m[l]&&m[l]!==t)?'both':t});
+  add(g.ar,'away');add(g.hr,'home');
+  g.records.forEach(r=>{if(r.snap){add(r.snap.ar,'away');add(r.snap.hr,'home')}});
+  return m;
+}
+function btOf(g,r,LM){const who=r.type==='run'?(r.runner||r.batter):r.batter;const t=who&&(LM||LMC||labelMap(g))[who];return(t==='away'||t==='home')?t:teamOf(r)}
+function ptOf(g,r,LM,bt){const t=r.pitcher&&(LM||LMC||labelMap(g))[r.pitcher];return(t==='away'||t==='home')?t:(bt==='away'?'home':'away')}
 function board(g){
   const s=st(g),n=Math.max(9,s.inning),T={away:{r:0,h:0,e:0},home:{r:0,h:0,e:0}},I={away:{},home:{}};
-  g.records.forEach(x=>{const b=teamOf(x),f=b==='away'?'home':'away';I[b][x.inning]=(I[b][x.inning]||0)+x.runs;T[b].r+=x.runs;T[b].h+=x.hits||0;T[f].e+=x.errors||0});
+  const LM=labelMap(g);
+  g.records.forEach(x=>{const b=btOf(g,x,LM),f=b==='away'?'home':'away';I[b][x.inning]=(I[b][x.inning]||0)+x.runs;T[b].r+=x.runs;T[b].h+=x.hits||0;T[f].e+=x.errors||0});
   const reached=(b,i)=>i<s.inning||(i===s.inning&&b==='away'&&s.half==='bottom');
   const row=b=>`<tr><td><b>${E(g[b])}</b></td>${Array.from({length:n},(_,k)=>`<td>${I[b][k+1]??(reached(b,k+1)?0:'-')}</td>`).join('')}<td>${T[b].r}</td><td>${T[b].h}</td><td>${T[b].e}</td></tr>`;
   return{html:`<div class="tw"><table class="sc"><thead><tr><th>隊伍</th>${Array.from({length:n},(_,k)=>`<th>${k+1}</th>`).join('')}<th>R</th><th>H</th><th>E</th></tr></thead><tbody>${row('away')}${row('home')}</tbody></table></div>`,T,I,n};
@@ -163,9 +174,9 @@ function statData(g){
   const D={away:{bat:{},pit:{}},home:{bat:{},pit:{}}};
   const B=(t,k)=>D[t].bat[k]||(D[t].bat[k]={name:k,pa:0,ab:0,h:0,d2:0,d3:0,hr:0,rbi:0,r:0,k:0,bb:0,sb:0});
   const P=(t,k)=>D[t].pit[k]||(D[t].pit[k]={name:k,outs:0,bf:0,h:0,hr:0,k:0,bb:0,hbp:0,r:0,np:0});
-  const okn=n=>n&&n!=='?';
+  const okn=n=>n&&n!=='?',LM=labelMap(g);
   g.records.forEach(r=>{
-    const bt=teamOf(r),ft=bt==='away'?'home':'away',pk=r.pitcher||'(未填)';
+    const bt=btOf(g,r,LM),ft=ptOf(g,r,LM,bt),pk=r.pitcher||'(未填)';
     if(r.type==='pa'){
       const b=B(bt,r.batter||'(未填)');b.pa++;if(!NON_AB.includes(r.result))b.ab++;b.h+=r.hits||0;
       if(r.result==='二安')b.d2++;if(r.result==='三安')b.d3++;if(r.result==='全壘打')b.hr++;b.rbi+=r.rbi||0;
@@ -314,7 +325,7 @@ function pitSel(g,fld){
 }
 function gameView(){
   const g=cg(),s=st(g),bat=s.half==='top'?'away':'home',fld=bat==='away'?'home':'away',ro=g[bat==='away'?'ar':'hr'],lu=g.lu?g.lu[bat]:Math.min(9,ro.length);
-  const pa=g.records.filter(r=>r.type==='pa'&&teamOf(r)===bat).length,idx=selIdx??(pa%lu),k=cnt(g.seq),b=s.bases.split('').map(Number);
+  const LM0=labelMap(g),pa=g.records.filter(r=>r.type==='pa'&&btOf(g,r,LM0)===bat).length,idx=selIdx??(pa%lu),k=cnt(g.seq),b=s.bases.split('').map(Number);
   const bp=ro[idx]||{},pp=g[fld==='away'?'ar':'hr'].find(q=>lab(q)===g.pit[fld]);
   const bd=board(g),base=(on,x,y)=>`<rect x="${x}" y="${y}" width="14" height="14" transform="rotate(45 ${x+7} ${y+7})" fill="${on?'var(--acc2)':'none'}" stroke="var(--m)" stroke-width="2"/>`;
   if(g.status==='final')return`<div class="card" style="margin-bottom:12px">${bd.html}</div><div class="card">比賽已結束。<button onclick="go('sum')">查看摘要</button> <button onclick="go('setup')">新比賽</button></div>`;
@@ -629,7 +640,7 @@ function ok(g){
   if(!roOK(g))return null;
   const s=st(g),bat=s.half==='top'?'away':'home',fld=bat==='away'?'home':'away';
   if(!g.pit[fld]){toast('請先輸入投手');return null}
-  const ro=g[bat==='away'?'ar':'hr'],lu=g.lu?g.lu[bat]:Math.min(9,ro.length),pa=g.records.filter(r=>r.type==='pa'&&teamOf(r)===bat).length,ix=selIdx??(pa%lu),p=ro[ix];
+  const LM0=labelMap(g),ro=g[bat==='away'?'ar':'hr'],lu=g.lu?g.lu[bat]:Math.min(9,ro.length),pa=g.records.filter(r=>r.type==='pa'&&btOf(g,r,LM0)===bat).length,ix=selIdx??(pa%lu),p=ro[ix];
   return{s,batter:((p.n?'#'+p.n+' ':'')+p.name).trim(),pitcher:g.pit[fld],slot:ix<lu?ix+1:0,pos:p.pos||''};
 }
 function pitch(c){const g=cg(),o=ok(g);if(!o)return;{const z=cnt(g.seq);if(z.s>=3||z.b>=4)g.seq=''}g.seqN=paCount(g);g.seq+=c;const k=cnt(g.seq);save();syncMeta(g,{seq:encSeq(g)});if(k.s>=3){submit('三振');return}if(k.b>=4){submit('四壞');return}render()}
@@ -648,6 +659,8 @@ function submit(result){
   commitPa(g,o,result,seq,null,rbiIn===''?null:Math.max(0,parseInt(rbiIn)||0),note);
 }
 function commitPa(g,o,result,seq,res,rb,note){
+  const cur=st(g);
+  if(o.s&&(cur.inning!==o.s.inning||cur.half!==o.s.half||cur.outs!==o.s.outs||cur.bases!==o.s.bases)){toast('比賽狀態剛剛已更新（可能是別台裝置記錄了新打席），請重新確認打者後再記錄');modal('');render();return}
   const r={type:'pa',batter:o.batter,pitcher:o.pitcher,seq,result,rbiM:rb,slot:o.slot,pos:o.pos};if(res)r.res=res;if(noteIn.trim())r.note=noteIn.trim();
   push(g,r);const x=g.records[g.records.length-1];render();
   toast((x.runs?`${result}，得 ${x.runs} 分，打點 ${x.rbi}`:`${result} 已記錄`+(x.rbi?`，打點 ${x.rbi}`:''))+(note||''));
@@ -739,7 +752,7 @@ function fieldRows(r){
 }
 function infoRow(r){return`<div class="info">${r.type==='run'?E(r.note||r.result):`<b>${E(r.result)}</b>　${E(r.note||'')}`}</div>`}
 function plCard(g,r,sc,full){
-  const tk=teamOf(r),ro=g[tk==='away'?'ar':'hr'],who=r.batter||'',lu=luOf(g,tk),ix=ro.findIndex(p=>lab(p)===who),pl=ix>=0?ro[ix]:null;
+  const tk=btOf(g,r),ro=g[tk==='away'?'ar':'hr'],who=r.batter||'',lu=luOf(g,tk),ix=ro.findIndex(p=>lab(p)===who),pl=ix>=0?ro[ix]:null;
   const sl=r.slot!==undefined?r.slot:(ix>=0&&ix<lu?ix+1:0),k=cnt(r.seq||''),outs=r.outsTot??r.after.outs;
   const av0=pl?av(pl,full?52:46):av({n:(who.match(/#(\d+)/)||[])[1]||'?'},full?52:46);
   const head=`${sl?'第'+sl+'棒':'替補'} ${E(r.pos||(pl&&pl.pos)||'')} ${E(who)}：`;
@@ -750,12 +763,13 @@ function plCard(g,r,sc,full){
   return`<div class="pe"><div>${av0}</div><div><div style="font-size:13px;line-height:1.6">${head}${sentence(r)}</div>${bar}${body}</div></div>`;
 }
 function gotoInn(n){const el=document.getElementById('in-'+n+'-top')||document.getElementById('in-'+n+'-bottom');if(el)el.scrollIntoView({behavior:'smooth',block:'start'})}
-function playByPlay(g){
+function playByPlay(g){LMC=labelMap(g);try{return playByPlay0(g)}finally{LMC=null}}
+function playByPlay0(g){
   replay(g);
-  const T={away:0,home:0},ev=g.records.map(r=>{T[teamOf(r)]+=r.runs;return{r,sc:{a:T.away,h:T.home}}});
+  const LM=LMC,T={away:0,home:0},ev=g.records.map(r=>{const bt=btOf(g,r,LM);T[bt]+=r.runs;return{r,hh:bt==='away'?'top':'bottom',sc:{a:T.away,h:T.home}}});
   if(!ev.length)return'<div class="card m">尚無紀錄</div>';
-  const mx=Math.max(...ev.map(e=>e.r.inning)),hdr=(r,id)=>`<div class="ih" ${id?`id="in-${r.inning}-${r.half}"`:''}>${r.inning} ${r.half==='top'?'上':'下'}　${E(r.half==='top'?g.away:g.home)}</div>`;
-  const build=(list,full,id)=>{let h='',last='';list.forEach(({r,sc})=>{const key=r.inning+r.half;if(key!==last){last=key;h+=hdr(r,id)}h+=r.type==='pa'?plCard(g,r,sc,full):infoRow(r)});return h};
+  const mx=Math.max(...ev.map(e=>e.r.inning)),hdr=(r,id,hh)=>`<div class="ih" ${id?`id="in-${r.inning}-${hh}"`:''}>${r.inning} ${hh==='top'?'上':'下'}　${E(hh==='top'?g.away:g.home)}</div>`;
+  const build=(list,full,id)=>{let h='',last='';list.forEach(({r,sc,hh})=>{const key=r.inning+hh;if(key!==last){last=key;h+=hdr(r,id,hh)}h+=r.type==='pa'?plCard(g,r,sc,full):infoRow(r)});return h};
   const flt=({r})=>pbF==='得分'?r.runs>0:pbF==='安打'?r.hits>0:pbF==='四壞'?(r.result==='四壞'||r.result==='觸身球'):r.result==='全壘打';
   const left=build(ev.filter(flt),true,false)||'<div class="m" style="padding:12px 0">沒有符合的紀錄</div>';
   const nav=Array.from({length:mx},(_,i)=>`<button class="inn" onclick="gotoInn(${i+1})">${i+1}</button>`).join('');
