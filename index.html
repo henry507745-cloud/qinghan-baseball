@@ -41,6 +41,22 @@ nav button{flex:1;border:0;border-radius:0;background:none;color:var(--m);paddin
 nav button.on{color:var(--acc);font-weight:700}
 .ov{position:fixed;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;padding:16px;z-index:20}
 .mb{max-height:88vh;overflow:auto;background:var(--s);border:1px solid var(--bd);border-radius:14px;padding:18px;width:100%;max-width:360px}
+.mb.big{max-width:none;width:90vw;height:90vh;max-height:90vh;padding:14px 16px}
+.sw-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.sw-col{min-width:0}
+.sw-h{display:flex;justify-content:space-between;align-items:center;padding:6px 4px;margin-bottom:6px;font-size:15px}
+.h-bat{border-bottom:3px solid var(--acc)}.h-fld{border-bottom:3px solid var(--g)}
+.sw-row{display:grid;grid-template-columns:24px minmax(0,1fr) 78px 112px;gap:6px;align-items:center;padding:6px 8px;border-radius:8px;margin-bottom:4px;border-left:4px solid transparent;background:var(--s2)}
+.sw-row select{padding:6px 4px;font-size:12px}
+.sw-who{display:flex;gap:6px;align-items:center;min-width:0;overflow:hidden;font-size:13px}.sw-who>span:not(.tagx){overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sw-cur{background:rgba(230,57,70,.22);border-left-color:var(--acc)}
+.sw-next{background:rgba(46,196,182,.2);border-left-color:var(--g)}
+.sw-chg{box-shadow:inset 0 0 0 1px var(--acc2)}
+.sw-pit{grid-template-columns:24px minmax(0,1fr) 150px;border-left-color:var(--bl)}.tg-pit{background:var(--bl);color:#fff}
+@media(max-width:640px){.sw-pit{grid-template-columns:18px minmax(0,1fr) 100px}}
+.tagx{font-size:10px;padding:1px 7px;border-radius:99px;white-space:nowrap;flex:none;font-weight:700}
+.tg-cur{background:var(--acc);color:#fff}.tg-next{background:var(--g);color:#05261f}
+.sw-bar{position:sticky;bottom:-14px;background:var(--s);padding:10px 0 2px;margin-top:10px;border-top:1px solid var(--bd)}
+@media(max-width:640px){.sw-row{grid-template-columns:18px minmax(0,1fr) 58px 76px;gap:4px;padding:5px 4px}.sw-who{font-size:11px}.sw-row select{font-size:11px;padding:5px 2px}}
 #toast{position:fixed;bottom:84px;left:50%;transform:translateX(-50%);background:var(--acc);color:#fff;padding:9px 20px;border-radius:10px;opacity:0;transition:.25s;pointer-events:none;z-index:30}
 #toast.on{opacity:1}
 .m{color:var(--m)}
@@ -340,7 +356,7 @@ function gameView(){
   <div class="card"><h2>打擊結果</h2><div class="rs">${RESULTS.map(r=>`<button onclick="submit('${r}')">${r}</button>`).join('')}</div>
   <div style="margin-top:10px;max-width:240px"><label>打點（選填，空白＝自動）</label><input type="number" min="0" max="9" inputmode="numeric" value="${E(rbiIn)}" oninput="rbiIn=this.value"></div><div style="margin-top:8px"><label>備註／特殊情況（選填，會顯示在逐打席紀錄）</label><input value="${E(noteIn)}" oninput="noteIn=this.value" placeholder="例如：守備干擾、野手選擇傳一壘"></div><div class="m" style="font-size:12px;margin-top:6px">壘上有人時，按結果後會先跳出「跑壘確認」視窗，可調整每位跑者去向與得分。</div></div>
   ${lineupCard(g)}
-  <div class="row"><button onclick="openSub('${bat}')">🔁 球員換人</button><button onclick="openPos('${bat}')">🧭 守位變更</button><button onclick="undoLast()">復原上一筆</button><button class="danger" onclick="endGame()">結束比賽</button></div>`;
+  <div class="row"><button onclick="openSwap()">🔁 換人／守位變更</button><button onclick="undoLast()">復原上一筆</button><button class="danger" onclick="endGame()">結束比賽</button></div>`;
 }
 const lab=p=>((p.n?'#'+p.n+' ':'')+p.name).trim()||'(未填)';
 const luOf=(g,t)=>g.lu?g.lu[t]:Math.min(9,g[t==='away'?'ar':'hr'].length);
@@ -924,6 +940,107 @@ async function uploadAll(){
   uploading=false;
   modal(`<h2>⬆️ 上傳結果</h2><div style="line-height:1.9">${R.map(E).join('<br>')}</div><div class="m" style="font-size:12px;margin-top:8px">已存在的資料會被這台裝置的版本覆蓋。</div><button class="pri" style="width:100%;margin-top:10px" onclick="modal('')">確定</button>`);
   render();
+}
+
+/* ---------- 換人／守位變更：90% 大視窗，兩隊並排（覆蓋舊的 openSub / openPos）---------- */
+let SW=null;
+function bigModal(h){$('modal').innerHTML=`<div class="ov" onclick="if(event.target===this)modal('')"><div class="mb big" id="swbox">${h}</div></div>`}
+function openSub(){openSwap()}
+function openPos(){openSwap()}
+function openSwap(){
+  const g=cg();if(!g||!roOK(g))return;
+  SW={away:{pos:{},sub:{},num:'',pit:'',pnum:''},home:{pos:{},sub:{},num:'',pit:'',pnum:''},bench:{away:g.ar.slice(luOf(g,'away')),home:g.hr.slice(luOf(g,'home'))},rost:{away:g.ar.slice(),home:g.hr.slice()}};
+  drawSwap();
+}
+function drawSwap(){
+  const g=cg(),s=st(g),old=$('swbox'),sc=old?old.scrollTop:0;
+  const batTk=s.half==='top'?'away':'home',fldTk=batTk==='away'?'home':'away',LM=labelMap(g);
+  const paOf=tk=>g.records.filter(r=>r.type==='pa'&&btOf(g,r,LM)===tk).length;
+  const curIdx=selIdx??(paOf(batTk)%Math.max(1,luOf(g,batTk))),nextIdx=paOf(fldTk)%Math.max(1,luOf(g,fldTk));
+  let total=0;
+  const col=tk=>{
+    const ro=g[tk==='away'?'ar':'hr'],lu=luOf(g,tk),c=SW[tk],isBat=tk===batTk,used=new Set(Object.values(c.sub));
+    const benchOpts=SW.bench[tk].map((p,k)=>used.has('b:'+k)?'':`<option value="b:${k}">${E(lab(p))}${p.pos?' ('+p.pos+')':''}</option>`).join('');
+    const curP=g.pit[tk]||'',curObj=ro.find(p=>lab(p)===curP||(curP&&p.name===curP)),pv=c.pit,pObj=pv&&pv!=='new'?SW.rost[tk][+pv.slice(2)]:null;
+    if(pv)total++;
+    const pitOpts=SW.rost[tk].map((p,k)=>p===curObj?'':`<option value="p:${k}" ${pv==='p:'+k?'selected':''}>${k<lu?(k+1)+'棒 ':'替補 '}${E(lab(p))}${p.pos?' ('+p.pos+')':''}</option>`).join('');
+    const pitRow=`<div class="sw-row sw-pit${pv?' sw-chg':''}"><b>投</b><div class="sw-who">${av(pObj||curObj||{n:(curP.match(/#(\d+)/)||[])[1]||'P'},28)}<span>${E(curP||'未設定')}${pv?' → '+E(pv==='new'?'#'+(c.pnum||'?'):lab(pObj)):''}</span><span class="tagx tg-pit">投手</span></div><select onchange="swPit('${tk}',this.value)"><option value="">換投手…</option>${pitOpts}<option value="new" ${pv==='new'?'selected':''}>輸入背號…</option></select></div>${pv==='new'?`<div class="row" style="margin:0 0 6px 30px"><input inputmode="numeric" maxlength="3" placeholder="投手背號" value="${E(c.pnum||'')}" oninput="SW['${tk}'].pnum=this.value" style="width:130px"></div>`:''}`;
+    const rows=ro.slice(0,lu).map((p,i)=>{
+      const sub=c.sub[i],pos=c.pos[i],staged=sub!==undefined||pos!==undefined;if(staged)total++;
+      const subP=sub?(sub==='new'?{n:c.num||'?',name:''}:SW.bench[tk][+sub.slice(2)]):null;
+      const shown=pos!==undefined?pos:(p.pos||'');
+      const isCur=isBat&&i===curIdx,isNext=!isBat&&i===nextIdx;
+      return`<div class="sw-row${isCur?' sw-cur':''}${isNext?' sw-next':''}${staged?' sw-chg':''}"><b>${i+1}</b>
+        <div class="sw-who">${av(subP&&sub!=='new'?subP:p,28)}<span>${E(lab(p))}${subP?' → '+E(lab(subP)):''}</span>${isCur?'<span class="tagx tg-cur">現在打擊</span>':''}${isNext?'<span class="tagx tg-next">下次進攻首位</span>':''}</div>
+        <select onchange="swPos('${tk}',${i},this.value)">${posOpts(shown)}</select>
+        <select onchange="swSub('${tk}',${i},this.value)"><option value="">換人…</option>${sub&&sub!=='new'?`<option value="${sub}" selected>${E(lab(subP))}</option>`:''}${benchOpts}<option value="new" ${sub==='new'?'selected':''}>輸入背號…</option></select></div>`;
+    }).join('');
+    const left=SW.bench[tk].map((p,k)=>used.has('b:'+k)?'':`<span class="chip">${E(lab(p))}${p.pos?' '+p.pos:''}</span>`).join(' ')||'<span class="m">沒有替補</span>';
+    const info=isBat?`目前打者：${E(lab(ro[curIdx]||{n:'',name:''}))}`:`目前投手：${E(g.pit[tk]||'未設定')}　下次進攻首位：${E(lab(ro[nextIdx]||{n:'',name:''}))}`;
+    return`<div class="sw-col"><div class="sw-h ${isBat?'h-bat':'h-fld'}"><b>${E(g[tk])}</b><span class="chip">${isBat?'進攻中':'防守中'}</span></div><div class="m" style="font-size:12px;margin-bottom:6px">${info}</div>${pitRow}${rows}
+      <div class="m" style="font-size:12px;margin:8px 0 4px">替補球員</div><div class="row" style="gap:4px">${left}</div>
+      <div class="row" style="margin-top:8px"><input inputmode="numeric" maxlength="3" placeholder="臨時替補背號" value="${E(c.num)}" oninput="SW['${tk}'].num=this.value" style="width:140px"><span class="m" style="font-size:11px">選「輸入背號…」時使用</span></div></div>`;
+  };
+  const cols=col('away')+col('home');
+  bigModal(`<div class="row" style="justify-content:space-between;margin-bottom:8px"><h2 style="margin:0">🔁 換人／守位變更</h2><button onclick="modal('')">✕ 關閉</button></div>
+    <div class="row" style="gap:8px;margin-bottom:10px;font-size:12px"><span class="tagx tg-cur">現在打擊（進攻方）</span><span class="tagx tg-next">下次進攻首位（防守方）</span><span class="tagx" style="box-shadow:inset 0 0 0 1px var(--acc2)">待確認變更</span><span class="m">先在下拉選單選好，最後按「確認全部變更」才會生效</span></div>
+    <div class="sw-grid">${cols}</div>
+    <div class="sw-bar row" style="justify-content:space-between"><span class="m">共 ${total} 項待確認</span><div class="row"><button onclick="swReset()">全部還原</button><button class="pri" onclick="swApply()">確認全部變更</button></div></div>`);
+  const nb=$('swbox');if(nb)nb.scrollTop=sc;
+}
+function swPos(tk,i,v){const g=cg(),cur=(g[tk==='away'?'ar':'hr'][i].pos)||'';if(v===cur)delete SW[tk].pos[i];else SW[tk].pos[i]=v;drawSwap()}
+function swSub(tk,i,v){
+  const c=SW[tk];
+  if(!v)delete c.sub[i];
+  else{
+    if(v==='new'&&Object.keys(c.sub).some(k=>+k!==i&&c.sub[k]==='new')){toast('每隊一次只能輸入一位臨時替補背號');drawSwap();return}
+    c.sub[i]=v;
+  }
+  drawSwap();
+}
+function swPit(tk,v){if(!v)SW[tk].pit='';else SW[tk].pit=v;drawSwap()}
+function swReset(){SW.away={pos:{},sub:{},num:'',pit:'',pnum:''};SW.home={pos:{},sub:{},num:'',pit:'',pnum:''};drawSwap()}
+function applySub(g,team,oi,benchObj,mn,np){
+  const ro=g[team==='away'?'ar':'hr'],lu=luOf(g,team),out=ro[oi];
+  if(!out||oi>=lu)return false;
+  if(mn&&ro.some(p=>p.n===mn)){toast(`背號 ${mn} 已在名單中，請從替補選單選擇`);return false}
+  const snap=snapOf(g);let inP;
+  if(mn)inP={n:mn,name:'',pos:''};
+  else{const bi=ro.indexOf(benchObj);if(bi<lu)return false;inP=ro.splice(bi,1)[0]}
+  inP.pos=np!==undefined?np:(out.pos||'');ro[oi]=inP;if(inP.pos==='P')g.pit[team]=lab(inP);
+  push(g,{type:'sub',result:'換人',batter:'',pitcher:'',seq:'',snap,note:`${whenOf(g)} ${g[team]}：${lab(out)}(${out.pos||'-'}) → ${lab(inP)}(${inP.pos||'-'})`});
+  return true;
+}
+function applyPos(g,team,i,np){
+  const ro=g[team==='away'?'ar':'hr'],p=ro[i];if(!p||(p.pos||'')===np)return false;
+  const snap=snapOf(g),old=p.pos;p.pos=np;if(np==='P')g.pit[team]=lab(p);
+  push(g,{type:'pos',result:'守位變更',batter:'',pitcher:'',seq:'',snap,note:`${whenOf(g)} ${g[team]}：${lab(p)} ${old||'-'} → ${np||'-'}`});
+  return true;
+}
+function applyPit(g,team,obj,mn){
+  const ro=g[team==='away'?'ar':'hr'],snap=snapOf(g),old=g.pit[team]||'未設定';
+  let label;
+  if(mn){const ex=ro.find(p=>p.n===mn&&!p.name);label=ex?lab(ex):'#'+mn}else label=lab(obj);
+  if(label===g.pit[team])return false;
+  g.pit[team]=label;
+  push(g,{type:'sub',result:'換投手',batter:'',pitcher:'',seq:'',snap,note:`${whenOf(g)} ${g[team]}：投手 ${old} → ${label}`});
+  return true;
+}
+function swApply(){
+  const g=cg();if(!g||!roOK(g))return;
+  for(const tk of ['away','home']){const c=SW[tk];if(Object.values(c.sub).includes('new')&&!(c.num||'').trim()){toast('請先輸入臨時替補的背號');return}if(c.pit==='new'&&!(c.pnum||'').trim()){toast('請先輸入新投手的背號');return}}
+  let n=0;
+  for(const tk of ['away','home']){
+    const c=SW[tk];
+    for(const [i,v] of Object.entries(c.sub)){
+      const np=c.pos[i];
+      const ok2=v==='new'?applySub(g,tk,+i,null,(c.num||'').trim(),np):applySub(g,tk,+i,SW.bench[tk][+v.slice(2)],'',np);
+      if(ok2)n++;
+    }
+    for(const [i,np] of Object.entries(c.pos)){if(c.sub[i]!==undefined)continue;if(applyPos(g,tk,+i,np))n++}
+    if(c.pit){const ok3=c.pit==='new'?applyPit(g,tk,null,(c.pnum||'').trim()):applyPit(g,tk,SW.rost[tk][+c.pit.slice(2)],'');if(ok3)n++}
+  }
+  modal('');render();toast(n?`已套用 ${n} 項變更`:'沒有變更');
 }
 
 render();
